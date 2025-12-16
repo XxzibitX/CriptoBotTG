@@ -411,7 +411,8 @@ app.use((error, req, res, next) => {
 
 // Запуск сервера
 const PORT = process.env.PORT || 3000
-const HOST = process.env.HOST || 'localhost'
+// Используем 0.0.0.0 для доступа извне, localhost только для разработки
+const HOST = process.env.HOST || (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '0.0.0.0')
 
 app.listen(PORT, HOST, () => {
   console.log(`
