@@ -1,0 +1,22 @@
+{
+  "name": "currency-exchange-proxy",
+  "version": "1.0.0",
+  "description": "Прокси-сервер для получения курсов валют",
+  "main": "proxy.js",
+  "scripts": {
+    "start": "node proxy.js",
+    "dev": "nodemon proxy.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": ["proxy", "api", "currency", "exchange", "cryptocurrency"],
+  "author": "Currency Exchange Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "node-fetch": "^2.6.7"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
