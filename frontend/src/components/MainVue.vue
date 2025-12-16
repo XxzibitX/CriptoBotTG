@@ -327,20 +327,12 @@ const formSubmitting = ref(false)
 const totalAmount = ref(0)
 
 // API эндпоинты
-//const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://criptobottg-production.up.railway.app'
-const API_BASE_URL = 'http://criptobottg-production.up.railway.app'
+const API_BASE_URL = import.meta.env.VITE_API_URLj || 'http://localhost:3000'
+//const API_BASE_URL = 'http://criptobottg-production.up.railway.app'
 const API_URL = `${API_BASE_URL}/api/rates`
 const API_ORDERS_URL = `${API_BASE_URL}/api/orders`
 const API_TELEGRAM_URL = `${API_BASE_URL}/api/telegram/send`
 const UPDATE_INTERVAL = 30000
-
-// Автозаполнение имени из Telegram, если доступно
-if (telegramUser.value) {
-  if (telegramUser.value.first_name && !formData.value.name) {
-    const lastName = telegramUser.value.last_name ? ` ${telegramUser.value.last_name}` : ''
-    formData.value.name = `${telegramUser.value.first_name}${lastName}`.trim()
-  }
-}
 
 // Computed свойства
 const connectionStatusClass = computed(() => {
@@ -586,15 +578,8 @@ function openApplicationForm() {
   if (!loading.value && !apiError.value && hasData.value) {
     showApplicationForm.value = true
     
-    // Автозаполнение имени из Telegram, если доступно
-    if (telegramUser.value && telegramUser.value.first_name) {
-      const lastName = telegramUser.value.last_name ? ` ${telegramUser.value.last_name}` : ''
-      formData.value.name = `${telegramUser.value.first_name}${lastName}`.trim()
-    } else {
-      formData.value.name = ''
-    }
-    
-    // Сбрасываем остальные поля
+    // Сбрасываем все поля формы (клиент должен ввести данные самостоятельно)
+    formData.value.name = ''
     formData.value.email = ''
     formData.value.phone = ''
     formData.value.amount = null
@@ -727,13 +712,8 @@ async function submitApplication() {
       showApplicationForm.value = false
       hideBackButton()
       
-      // Сбрасываем форму
-      if (telegramUser.value && telegramUser.value.first_name) {
-        const lastName = telegramUser.value.last_name ? ` ${telegramUser.value.last_name}` : ''
-        formData.value.name = `${telegramUser.value.first_name}${lastName}`.trim()
-      } else {
-        formData.value.name = ''
-      }
+      // Сбрасываем форму (клиент должен ввести данные самостоятельно)
+      formData.value.name = ''
       formData.value.email = ''
       formData.value.phone = ''
       formData.value.amount = null
@@ -781,13 +761,18 @@ onMounted(() => {
 
 <style scoped>
 .main-container {
-  width: 100vw;
+  width: 100%;
+  min-width: 100vw;
   position: relative;
   min-height: 100vh;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0;
+  margin: 0;
 }
 
 .content-wrapper {
@@ -796,8 +781,10 @@ onMounted(() => {
   width: 100%;
   max-width: 1200px;
   padding: 20px;
+  padding-bottom: 40px;
   display: flex;
   justify-content: center;
+  box-sizing: border-box;
 }
 
 .center-container {
@@ -816,6 +803,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-sizing: border-box;
 }
 
 @keyframes fadeIn {
@@ -850,6 +838,7 @@ onMounted(() => {
 
 /* Форма заявки */
 .application-form {
+  padding-top: 40px;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -1497,38 +1486,72 @@ onMounted(() => {
 
 /* Адаптивность */
 @media (max-width: 768px) {
+  .main-container {
+    min-height: 100vh;
+    height: auto;
+    padding: 0;
+    align-items: flex-start; /* Изменено с center на flex-start */
+    padding-top: env(safe-area-inset-top, 0); /* Для iPhone с вырезом */
+  }
+
   .content-wrapper {
-    padding: 15px;
+    width: 100%;
+    padding: 20px 15px;
+    padding-top: max(20px, env(safe-area-inset-top, 20px)); /* Учитываем safe area */
+    padding-bottom: 30px;
+    margin: 0;
+    box-sizing: border-box;
   }
 
   .center-container {
-    padding: 30px 25px;
-    margin: 20px;
-    min-height: 600px;
+    background-color: rgba(30, 30, 30, 0.85); /* Восстановлен правильный цвет */
+    margin: 0;
+    min-height: auto;
+    height: auto;
+    max-width: 100%;
+    border-radius: 20px; /* Восстановлен border-radius */
+  }
+
+  .logo-container {
+    margin-bottom: 30px;
   }
 
   .logo {
-    width: 80px;
-    height: 80px;
-    font-size: 48px;
+    width: 70px;
+    height: 70px;
+    font-size: 42px;
+    margin-bottom: 15px;
   }
 
   .logo-title {
-    font-size: 24px;
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+
+  .logo-subtitle {
+    font-size: 14px;
   }
 
   .exchange-rates {
     grid-template-columns: 1fr;
     gap: 15px;
+    margin-bottom: 20px;
   }
 
   .rate-block {
-    height: 110px;
+    height: auto;
+    min-height: 110px;
+    padding: 18px;
+  }
+
+  .rate-value {
+    font-size: 28px;
   }
 
   .rate-info {
     grid-template-columns: 1fr;
     gap: 12px;
+    padding-top: 15px;
   }
 
   .info-item.full-width {
@@ -1537,31 +1560,13 @@ onMounted(() => {
 
   .loading-state,
   .error-state {
-    padding: 20px;
-  }
-
-  .submit-btn {
-    padding: 20px;
-    font-size: 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .center-container {
     padding: 25px 20px;
-    min-height: 550px;
+    min-height: auto;
   }
 
-  .exchange-card {
-    padding: 20px;
-  }
-
-  .rate-value {
-    font-size: 28px;
-  }
-
-  .rate-block {
-    height: 100px;
+  .error-icon {
+    font-size: 40px;
+    margin-bottom: 15px;
   }
 
   .error-state h3 {
@@ -1570,6 +1575,233 @@ onMounted(() => {
 
   .error-message {
     font-size: 14px;
+  }
+
+  .submit-btn {
+    padding: 18px 20px;
+    font-size: 16px;
+  }
+
+  .form-card {
+    padding: 25px 20px;
+  }
+
+  .form-header h2 {
+    font-size: 22px;
+  }
+
+  .form-group {
+    gap: 6px;
+  }
+
+  .form-input,
+  .form-textarea,
+  select.form-input {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .total-amount {
+    padding: 12px;
+  }
+
+  .total-value {
+    font-size: 24px;
+  }
+
+  .submit-form-btn {
+    padding: 16px 20px;
+    font-size: 16px;
+  }
+
+  .notifications-container {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+  }
+
+  .toast {
+    min-width: auto;
+    max-width: none;
+    padding: 14px 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-container {
+    padding: 0;
+    padding-top: env(safe-area-inset-top, 0);
+    align-items: flex-start;
+  }
+
+  .content-wrapper {
+    padding: 15px 10px;
+    padding-top: max(15px, env(safe-area-inset-top, 15px));
+    padding-bottom: 25px;
+    box-sizing: border-box;
+  }
+
+  .center-container {
+    padding: 20px 15px;
+    border-radius: 16px; /* Восстановлен border-radius */
+    min-height: auto;
+  }
+
+  .logo {
+    width: 60px;
+    height: 60px;
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  .logo-title {
+    font-size: 20px;
+  }
+
+  .logo-subtitle {
+    font-size: 13px;
+  }
+
+  .exchange-card {
+    padding: 18px 15px;
+  }
+
+  .exchange-header {
+    margin-bottom: 20px;
+  }
+
+  .exchange-header h2 {
+    font-size: 20px;
+  }
+
+  .rate-block {
+    padding: 15px;
+    min-height: 100px;
+  }
+
+  .rate-value {
+    font-size: 24px;
+  }
+
+  .rate-label {
+    font-size: 12px;
+  }
+
+  .rate-change {
+    font-size: 12px;
+  }
+
+  .rate-info {
+    gap: 10px;
+    padding-top: 12px;
+  }
+
+  .info-label {
+    font-size: 11px;
+  }
+
+  .info-value {
+    font-size: 13px;
+  }
+
+  .submit-btn {
+    padding: 16px 18px;
+    font-size: 15px;
+  }
+
+  .form-card {
+    padding: 20px 15px;
+  }
+
+  .form-header h2 {
+    font-size: 20px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+  }
+
+  .form-input,
+  .form-textarea,
+  select.form-input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .total-value {
+    font-size: 22px;
+  }
+
+  .submit-form-btn {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+
+  .toast {
+    padding: 12px 16px;
+  }
+
+  .toast-title {
+    font-size: 14px;
+  }
+
+  .toast-message {
+    font-size: 12px;
+  }
+}
+
+/* Для очень маленьких экранов (iPhone SE и подобные) */
+@media (max-width: 375px) {
+  .center-container {
+    padding: 18px 12px;
+  }
+
+  .logo {
+    width: 50px;
+    height: 50px;
+    font-size: 30px;
+  }
+
+  .logo-title {
+    font-size: 18px;
+  }
+
+  .rate-value {
+    font-size: 22px;
+  }
+
+  .submit-btn {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Портретная ориентация на мобильных */
+@media (max-width: 768px) and (orientation: portrait) {
+  .main-container {
+    min-height: 100vh;
+    height: 100vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Ландшафтная ориентация на мобильных */
+@media (max-width: 768px) and (orientation: landscape) {
+  .center-container {
+    min-height: auto;
+    max-height: 95vh;
+    overflow-y: auto;
+  }
+
+  .logo-container {
+    margin-bottom: 20px;
+  }
+
+  .logo {
+    width: 50px;
+    height: 50px;
+    font-size: 32px;
   }
 }
 </style>

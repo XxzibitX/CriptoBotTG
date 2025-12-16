@@ -7,15 +7,20 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue';
 
-// Конфигурация частиц
-const config = {
-  particleCount: 60,         // Количество частиц
-  maxParticleSize: 4,        // Максимальный размер частицы
-  minSpeed: 0.2,             // Минимальная скорость
-  maxSpeed: 0.6,             // Максимальная скорость
-  lineMaxDistance: 150,      // Максимальное расстояние для соединения линиями
-  lineColor: 'rgba(255, 255, 255, 0.1)' // Цвет соединительных линий
+// Конфигурация частиц (адаптивная для мобильных)
+const getParticleConfig = () => {
+  const isMobile = window.innerWidth < 768;
+  return {
+    particleCount: isMobile ? 40 : 60,         // Меньше частиц на мобильных
+    maxParticleSize: isMobile ? 3 : 4,         // Меньший размер на мобильных
+    minSpeed: 0.2,
+    maxSpeed: 0.6,
+    lineMaxDistance: isMobile ? 100 : 150,     // Меньшее расстояние на мобильных
+    lineColor: 'rgba(255, 255, 255, 0.1)'
+  };
 };
+
+let config = getParticleConfig();
 
 let particles = [];
 let animationId = null;
@@ -66,11 +71,32 @@ function init() {
 
   // Устанавливаем размеры
   function resize() {
-    width = canvas.width = container.clientWidth;
-    height = canvas.height = container.clientHeight;
+    // Используем viewport размеры для полного покрытия
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    
+    // Устанавливаем размеры canvas элемента
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
   }
   resize();
-  window.addEventListener('resize', resize);
+  
+  // Обработчик изменения размера окна
+  const resizeHandler = () => {
+    resize();
+    // Обновляем конфигурацию для мобильных
+    config = getParticleConfig();
+    // Ограничиваем позиции частиц новыми размерами
+    particles.forEach(particle => {
+      particle.x = Math.min(particle.x, width);
+      particle.y = Math.min(particle.y, height);
+    });
+  };
+  
+  window.addEventListener('resize', resizeHandler);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(resizeHandler, 100); // Задержка для корректного определения размеров после поворота
+  });
 
   // Создаем частицы
   particles = [];
@@ -83,9 +109,15 @@ function init() {
 
   // Очистка при размонтировании
   onUnmounted(() => {
-    if (animationId) cancelAnimationFrame(animationId);
-    window.removeEventListener('resize', resize);
-    if (container && canvas) container.removeChild(canvas);
+    if (animationId) {
+      cancelAnimationFrame(animationId);
+      animationId = null;
+    }
+    window.removeEventListener('resize', resizeHandler);
+    window.removeEventListener('orientationchange', resizeHandler);
+    if (container && canvas && container.contains(canvas)) {
+      container.removeChild(canvas);
+    }
   });
 }
 
@@ -151,9 +183,20 @@ onMounted(() => {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
+  min-width: 100%;
+  min-height: 100%;
   z-index: -1; /* Фон позади контента */
   overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Убеждаемся, что canvas занимает весь контейнер */
+.animated-background canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
 </style>

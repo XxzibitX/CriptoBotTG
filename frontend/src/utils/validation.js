@@ -1,16 +1,44 @@
 /**
- * Валидация имени
+ * Валидация имени и фамилии
  */
 export function validateName(name) {
-  if (!name || name.trim().length < 2) {
+  if (!name || !name.trim()) {
+    return 'Введите ваше имя и фамилию'
+  }
+  
+  const trimmedName = name.trim()
+  
+  // Проверяем минимальную длину
+  if (trimmedName.length < 2) {
     return 'Имя должно содержать минимум 2 символа'
   }
-  if (name.trim().length > 100) {
+  
+  // Проверяем максимальную длину
+  if (trimmedName.length > 100) {
     return 'Имя слишком длинное (максимум 100 символов)'
   }
-  if (!/^[а-яА-ЯёЁa-zA-Z\s\-']+$/.test(name.trim())) {
-    return 'Имя может содержать только буквы, пробелы, дефисы и апострофы'
+  
+  // Проверяем, что есть и имя, и фамилия (минимум 2 слова)
+  const nameParts = trimmedName.split(/\s+/).filter(part => part.length > 0)
+  if (nameParts.length < 2) {
+    return 'Введите имя и фамилию (минимум 2 слова)'
   }
+  
+  // Проверяем, что каждое слово содержит только буквы, дефисы и апострофы
+  const namePattern = /^[а-яА-ЯёЁa-zA-Z\-']+$/
+  for (const part of nameParts) {
+    if (!namePattern.test(part)) {
+      return 'Имя и фамилия могут содержать только буквы, дефисы и апострофы'
+    }
+  }
+  
+  // Проверяем минимальную длину каждого слова
+  for (const part of nameParts) {
+    if (part.length < 2) {
+      return 'Каждое слово (имя и фамилия) должно содержать минимум 2 символа'
+    }
+  }
+  
   return null
 }
 
