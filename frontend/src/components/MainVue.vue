@@ -327,7 +327,8 @@ const formSubmitting = ref(false)
 const totalAmount = ref(0)
 
 // API эндпоинты
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://criptobottg-production.up.railway.app:3000'
+//const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://criptobottg-production.up.railway.app'
+const API_BASE_URL = 'http://criptobottg-production.up.railway.app'
 const API_URL = `${API_BASE_URL}/api/rates`
 const API_ORDERS_URL = `${API_BASE_URL}/api/orders`
 const API_TELEGRAM_URL = `${API_BASE_URL}/api/telegram/send`
