@@ -1,37 +1,44 @@
+/* ============================================
+   Import Order: Reset → Base → Main
+   ============================================ */
+@import './reset.css';
 @import './base.css';
 
-/* Убеждаемся, что body и html занимают весь экран */
-html, body {
+/* ============================================
+   Global Layout Styles
+   ============================================ */
+
+/* Убеждаемся, что html и body занимают весь экран */
+html {
   width: 100%;
   height: 100%;
-  margin: 0;
-  padding: 0;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
 }
 
+body {
+  width: 100%;
+  min-height: 100vh;
+  height: 100%;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Основной контейнер приложения */
 #app {
   width: 100%;
   min-height: 100vh;
+  position: relative;
   margin: 0;
   padding: 0;
-  font-weight: normal;
-  position: relative;
 }
 
-/* Для мобильных устройств */
-@media (max-width: 768px) {
-  #app {
-    max-width: 100%;
-  }
-}
-
+/* Ссылки */
 a,
 .green {
   text-decoration: none;
   color: hsla(160, 100%, 37%, 1);
   transition: 0.4s;
-  padding: 0;
 }
 
 @media (hover: hover) {
@@ -40,15 +47,7 @@ a,
   }
 }
 
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0;
-  }
-}
+/* УДАЛЕНО: Конфликтующий медиа-запрос для desktop
+   Этот стиль менял body на flex и #app на grid,
+   что конфликтовало с основным дизайном приложения
+*/

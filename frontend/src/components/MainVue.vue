@@ -26,7 +26,7 @@
         <div v-if="!showApplicationForm" class="exchange-container">
           <div class="exchange-card">
             <div class="exchange-header">
-              <img src="./icons/usdt.svg" alt="USDT" class="currency-flag" />
+              <img :src="usdtIcon" alt="USDT" class="currency-flag" />
               <h2>USDT/RUB</h2>
               <div class="connection-status" :class="connectionStatusClass">
                 {{ connectionStatusIcon }}
@@ -278,6 +278,7 @@ import { validateForm } from '../utils/validation.js'
 import { formatPhone, formatAmount, parseAmount } from '../utils/format.js'
 import ToastNotification from './ToastNotification.vue'
 import { useTelegram } from '../composables/useTelegram.js'
+import usdtIcon from './icons/usdt.svg'
 
 // Telegram Web App
 const {
