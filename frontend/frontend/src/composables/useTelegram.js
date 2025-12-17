@@ -30,13 +30,7 @@ export function useTelegram() {
         document.documentElement.setAttribute('data-theme', 'dark')
       }
       
-      console.log('✅ Telegram Web App инициализирован', {
-        user: user.value,
-        version: webApp.value.version,
-        platform: webApp.value.platform
-      })
     } else {
-      console.log('ℹ️ Приложение запущено вне Telegram')
       isTelegram.value = false
     }
   })

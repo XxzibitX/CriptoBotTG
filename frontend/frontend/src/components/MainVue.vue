@@ -74,7 +74,8 @@
               <div class="rate-info">
                 <div class="info-item">
                   <span class="info-label">Обновлено:</span>
-                  <span class="info-value">{{ formattedLastUpdateTime }}</span>
+                  <!-- <span class="info-value">{{ formattedLastUpdateTime }}</span> -->
+                  <span class="info-value">30 секунд назад</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">Изменение за 24ч:</span>
@@ -203,10 +204,7 @@
                   >
                     <option value="" disabled>Выберите способ оплаты</option>
                     <option value="bank_card">Банковская карта</option>
-                    <option value="sberbank">Сбербанк Онлайн</option>
-                    <option value="tinkoff">Тинькофф</option>
-                    <option value="yoomoney">ЮMoney</option>
-                    <option value="qiwi">QIWI</option>
+                    <option value="sberbank">СПБ</option>
                   </select>
                   <span v-if="formErrors.paymentMethod" class="form-error">{{ formErrors.paymentMethod }}</span>
                 </div>
@@ -441,8 +439,6 @@ async function fetchExchangeRate() {
     apiError.value = false
     errorMessage.value = ''
 
-    console.log('🔄 Запрос актуального курса...')
-
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 10000)
 
@@ -481,8 +477,6 @@ async function fetchExchangeRate() {
 
       // Сохраняем локальное время получения данных
       lastSuccessfulFetchTime.value = Date.now()
-      console.log('✅ Курс успешно получен в:',
-        new Date(lastSuccessfulFetchTime.value).toLocaleTimeString('ru-RU'))
 
     } else {
       throw new Error(data.message || 'Некорректный формат ответа от сервера')
@@ -627,13 +621,6 @@ async function submitApplication() {
   formSubmitting.value = true
 
   try {
-    console.log('📤 Отправка заявки:', {
-      ...formData.value,
-      exchangeRate: exchangeRate.value,
-      totalAmount: totalAmount.value,
-      timestamp: new Date().toISOString()
-    })
-
     const response = await fetch(API_ORDERS_URL, {
       method: 'POST',
       headers: {
@@ -745,18 +732,13 @@ let updateTimer = null
 
 // Инициализация
 onMounted(() => {
-  console.log('🚀 Инициализация компонента курсов валют')
-
   onUnmounted(() => {
-    console.log('🧹 Очистка компонента')
     if (updateTimer) clearInterval(updateTimer)
   })
 
   fetchExchangeRate()
 
   updateTimer = setInterval(fetchExchangeRate, UPDATE_INTERVAL)
-
-  console.log(`⏰ Автообновление каждые ${UPDATE_INTERVAL/1000} секунд`)
 })
 </script>
 

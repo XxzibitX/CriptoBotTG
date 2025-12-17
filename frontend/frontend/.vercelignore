@@ -1,0 +1,12 @@
+src/
+node_modules/
+*.config.js
+eslint.config.js
+jsconfig.json
+package.json
+package-lock.json
+README.md
+PRODUCTION_TEST.md
+public/
+vite.config.js
+
