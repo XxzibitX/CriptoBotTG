@@ -326,8 +326,17 @@ const formSubmitting = ref(false)
 const totalAmount = ref(0)
 
 // API эндпоинты
-//const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-const API_BASE_URL = 'http://criptobottg-production.up.railway.app'
+// Автоматическое определение базового URL
+const getApiBaseUrl = () => {
+  // В production используем текущий домен (тот же, где загружен Frontend)
+  if (import.meta.env.PROD) {
+    return window.location.origin
+  }
+  // В development используем переменную окружения или localhost
+  return import.meta.env.VITE_API_URL || 'http://localhost:3000'
+}
+
+const API_BASE_URL = getApiBaseUrl()
 const API_URL = `${API_BASE_URL}/api/rates`
 const API_ORDERS_URL = `${API_BASE_URL}/api/orders`
 const API_TELEGRAM_URL = `${API_BASE_URL}/api/telegram/send`
