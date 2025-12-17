@@ -18,7 +18,7 @@
         <!-- Логотип -->
         <div class="logo-container">
           <div class="logo">$</div>
-          <h1 class="logo-title">Currency ExchangeХУЙ</h1>
+          <h1 class="logo-title">Currency Exchange</h1>
           <p class="logo-subtitle">Безопасный обмен валюты</p>
         </div>
 

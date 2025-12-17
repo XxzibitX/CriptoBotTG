@@ -113,8 +113,8 @@ apt install -y certbot python3-certbot-nginx
 
 ```bash
 # Создаем папку для проекта
-mkdir -p /var/www/currency-exchange
-cd /var/www/currency-exchange
+mkdir -p /var/www/currency-exchange/CriptoBotTG
+cd /var/www/currency-exchange/CriptoBotTG
 ```
 
 ### 3.2 Загрузка файлов (3 способа)
@@ -136,8 +136,8 @@ git clone https://github.com/ваш-username/ваш-репозиторий.git .
 **На вашем компьютере (Mac/Linux):**
 ```bash
 cd /Users/a1111/Documents/Front-End/CriptoBotTG
-scp -r backend root@ВАШ_IP:/var/www/currency-exchange/
-scp -r frontend root@ВАШ_IP:/var/www/currency-exchange/
+scp -r backend root@ВАШ_IP:/var/www/currency-exchange/CriptoBotTG/
+scp -r frontend root@ВАШ_IP:/var/www/currency-exchange/CriptoBotTG/
 ```
 
 **На Windows (используйте WinSCP или FileZilla):**
@@ -150,12 +150,12 @@ scp -r frontend root@ВАШ_IP:/var/www/currency-exchange/
 ```bash
 cd /Users/a1111/Documents/Front-End/CriptoBotTG
 zip -r project.zip backend frontend
-scp project.zip root@ВАШ_IP:/var/www/currency-exchange/
+scp project.zip root@ВАШ_IP:/var/www/currency-exchange/CriptoBotTG/
 ```
 
 **На сервере:**
 ```bash
-cd /var/www/currency-exchange
+cd /var/www/currency-exchange/CriptoBotTG
 apt install -y unzip
 unzip project.zip
 rm project.zip
@@ -168,7 +168,7 @@ rm project.zip
 ### 4.1 Установка зависимостей
 
 ```bash
-cd /var/www/currency-exchange/backend
+cd /var/www/currency-exchange/CriptoBotTG/backend
 npm install --production
 ```
 
@@ -188,7 +188,7 @@ PORT=3000
 RAPIRA_API_URL=https://api.rapira.net/open/market/rates
 
 # Путь к файлу с заявками
-ORDERS_FILE=/var/www/currency-exchange/backend/data/orders.json
+ORDERS_FILE=/var/www/currency-exchange/CriptoBotTG/backend/data/orders.json
 
 # Telegram Bot (опционально, но рекомендуется)
 TELEGRAM_BOT_TOKEN=ваш_токен_бота
@@ -214,14 +214,14 @@ NODE_ENV=production
 ### 4.3 Создание папки для данных
 
 ```bash
-mkdir -p /var/www/currency-exchange/backend/data
-chmod 755 /var/www/currency-exchange/backend/data
+mkdir -p /var/www/currency-exchange/CriptoBotTG/backend/data
+chmod 755 /var/www/currency-exchange/CriptoBotTG/backend/data
 ```
 
 ### 4.4 Запуск Backend через PM2
 
 ```bash
-cd /var/www/currency-exchange/backend
+cd /var/www/currency-exchange/CriptoBotTG/backend
 pm2 start proxy.js --name "currency-backend"
 pm2 save
 ```
@@ -241,33 +241,21 @@ Backend должен быть доступен на `http://ВАШ_IP:3000`
 ### 5.1 Сборка Frontend (если еще не собрано)
 
 ```bash
-cd /var/www/currency-exchange/frontend
+cd /var/www/currency-exchange/CriptoBotTG/frontend
 npm install
 npm run build
 ```
 
 ### 5.2 Обновление API URL в коде (если нужно)
 
-Проверьте файл `frontend/src/components/MainVue.vue` - там должны быть URL для API.
+✅ **API URL уже настроен автоматически!**
 
-Если они указывают на `localhost` или другой адрес, нужно обновить на ваш домен/IP.
+Код определяет URL по текущему домену/IP, поэтому менять ничего не нужно.
 
-**Найдите строки с:**
-```javascript
-const API_URL = '...'
-const API_ORDERS_URL = '...'
-const API_TELEGRAM_URL = '...'
-```
-
-**Измените на:**
-```javascript
-const API_URL = 'https://ваш-домен.com/api/rates'
-const API_ORDERS_URL = 'https://ваш-домен.com/api/orders'
-const API_TELEGRAM_URL = 'https://ваш-домен.com/api/telegram/send'
-```
-
-Затем пересоберите:
+Просто пересоберите Frontend:
 ```bash
+cd /var/www/currency-exchange/CriptoBotTG/frontend
+npm install
 npm run build
 ```
 
@@ -275,10 +263,10 @@ npm run build
 
 ```bash
 # Создаем папку для статических файлов
-mkdir -p /var/www/currency-exchange/public
+mkdir -p /var/www/currency-exchange/CriptoBotTG/public
 
 # Копируем собранные файлы
-cp -r /var/www/currency-exchange/frontend/dist/* /var/www/currency-exchange/public/
+cp -r /var/www/currency-exchange/CriptoBotTG/frontend/dist/* /var/www/currency-exchange/CriptoBotTG/public/
 ```
 
 ---
@@ -301,7 +289,7 @@ upstream backend {
 
 server {
     listen 80;
-    server_name ваш-домен.com www.ваш-домен.com;
+    server_name xcoinapp.ru www.xcoinapp.ru;
 
     # Логи
     access_log /var/log/nginx/currency-exchange-access.log;
@@ -330,7 +318,7 @@ server {
 
     # Статические файлы Frontend
     location / {
-        root /var/www/currency-exchange/public;
+        root /var/www/currency-exchange/CriptoBotTG/public;
         index index.html;
         try_files $uri $uri/ /index.html;
         
@@ -424,7 +412,7 @@ certbot renew --dry-run
 
 ```bash
 # Проверка через curl
-curl http://localhost:3000/api/health
+    curl http://localhost:3000/api/health
 
 # Должен вернуть JSON с информацией о сервере
 ```
@@ -485,7 +473,7 @@ pm2 info currency-backend
 pm2 stop currency-backend
 
 # 2. Обновите код (через Git или загрузите новые файлы)
-cd /var/www/currency-exchange
+cd /var/www/currency-exchange/CriptoBotTG
 git pull  # или загрузите файлы заново
 
 # 3. Обновите зависимости (если нужно)
@@ -520,7 +508,7 @@ pm2 logs currency-backend
 netstat -tulpn | grep 3000
 
 # Проверьте переменные окружения
-cat /var/www/currency-exchange/backend/.env
+cat /var/www/currency-exchange/CriptoBotTG/backend/.env
 ```
 
 ### Проблема: Nginx показывает 502 Bad Gateway
@@ -540,11 +528,11 @@ nginx -t
 
 ```bash
 # Проверьте права доступа
-ls -la /var/www/currency-exchange/public
+ls -la /var/www/currency-exchange/CriptoBotTG/public
 
 # Установите правильные права
-chown -R www-data:www-data /var/www/currency-exchange/public
-chmod -R 755 /var/www/currency-exchange/public
+chown -R www-data:www-data /var/www/currency-exchange/CriptoBotTG/public
+chmod -R 755 /var/www/currency-exchange/CriptoBotTG/public
 ```
 
 ### Проблема: API запросы не работают
@@ -612,7 +600,7 @@ reboot
 - [ ] Nginx установлен и работает
 - [ ] PM2 установлен и настроен автозапуск
 - [ ] Backend запущен через PM2
-- [ ] Frontend собран и скопирован в `/var/www/currency-exchange/public`
+- [ ] Frontend собран и скопирован в `/var/www/currency-exchange/CriptoBotTG/public`
 - [ ] Nginx конфигурация создана и активирована
 - [ ] Firewall настроен
 - [ ] SSL сертификат установлен (если есть домен)

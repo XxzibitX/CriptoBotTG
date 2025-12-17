@@ -36,8 +36,8 @@ apt install -y certbot python3-certbot-nginx
 
 ### 3. Создайте структуру папок
 ```bash
-mkdir -p /var/www/currency-exchange
-cd /var/www/currency-exchange
+mkdir -p /var/www/currency-exchange/CriptoBotTG
+cd /var/www/currency-exchange/CriptoBotTG
 ```
 
 ### 4. Загрузите проект
@@ -52,14 +52,14 @@ cd /Users/a1111/Documents/Front-End/CriptoBotTG
 ```bash
 # На вашем компьютере
 cd /Users/a1111/Documents/Front-End/CriptoBotTG
-scp -r backend root@ВАШ_IP:/var/www/currency-exchange/
-scp -r frontend/dist root@ВАШ_IP:/var/www/currency-exchange/public/
+scp -r backend root@ВАШ_IP:/var/www/currency-exchange/CriptoBotTG/
+scp -r frontend/dist root@ВАШ_IP:/var/www/currency-exchange/CriptoBotTG/public/
 ```
 
 ### 5. Настройте Backend
 ```bash
 ssh root@ВАШ_IP
-cd /var/www/currency-exchange/backend
+cd /var/www/currency-exchange/CriptoBotTG/backend
 npm install --production
 
 # Создайте .env файл
@@ -70,7 +70,7 @@ nano .env
 ```env
 PORT=3000
 RAPIRA_API_URL=https://api.rapira.net/open/market/rates
-ORDERS_FILE=/var/www/currency-exchange/backend/data/orders.json
+ORDERS_FILE=/var/www/currency-exchange/CriptoBotTG/backend/data/orders.json
 TELEGRAM_BOT_TOKEN=ваш_токен
 TELEGRAM_ADMIN_CHAT_ID=ваш_chat_id
 NODE_ENV=production
@@ -142,5 +142,5 @@ tail -f /var/log/nginx/currency-exchange-error.log
 
 1. **Backend не запускается**: `pm2 logs currency-backend`
 2. **502 ошибка**: Проверьте, что Backend запущен: `pm2 status`
-3. **Frontend не загружается**: Проверьте права: `chmod -R 755 /var/www/currency-exchange/public`
+3. **Frontend не загружается**: Проверьте права: `chmod -R 755 /var/www/currency-exchange/CriptoBotTG/public`
 

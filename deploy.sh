@@ -12,7 +12,7 @@ if [ -z "$1" ]; then
 fi
 
 SERVER=$1
-PROJECT_DIR="/var/www/currency-exchange"
+PROJECT_DIR="/var/www/currency-exchange/CriptoBotTG"
 
 echo "🚀 Начинаю деплой на $SERVER..."
 
@@ -37,7 +37,7 @@ scp -r "$TEMP_DIR/frontend-dist" "$SERVER:$PROJECT_DIR/frontend-dist"
 # 4. Установка зависимостей и настройка на сервере
 echo "⚙️ Настраиваю Backend на сервере..."
 ssh $SERVER << 'ENDSSH'
-cd /var/www/currency-exchange/backend
+cd /var/www/currency-exchange/CriptoBotTG/backend
 npm install --production
 mkdir -p data
 chmod 755 data
@@ -47,7 +47,7 @@ if [ ! -f .env ]; then
     cat > .env << EOF
 PORT=3000
 RAPIRA_API_URL=https://api.rapira.net/open/market/rates
-ORDERS_FILE=/var/www/currency-exchange/backend/data/orders.json
+ORDERS_FILE=/var/www/currency-exchange/CriptoBotTG/backend/data/orders.json
 NODE_ENV=production
 EOF
     echo "✅ Создан файл .env (не забудьте добавить Telegram токены!)"
@@ -62,11 +62,11 @@ ENDSSH
 # 5. Настройка Frontend
 echo "🎨 Настраиваю Frontend на сервере..."
 ssh $SERVER << 'ENDSSH'
-mkdir -p /var/www/currency-exchange/public
-cp -r /var/www/currency-exchange/frontend-dist/* /var/www/currency-exchange/public/
-chown -R www-data:www-data /var/www/currency-exchange/public
-chmod -R 755 /var/www/currency-exchange/public
-rm -rf /var/www/currency-exchange/frontend-dist
+mkdir -p /var/www/currency-exchange/CriptoBotTG/public
+cp -r /var/www/currency-exchange/CriptoBotTG/frontend-dist/* /var/www/currency-exchange/CriptoBotTG/public/
+chown -R www-data:www-data /var/www/currency-exchange/CriptoBotTG/public
+chmod -R 755 /var/www/currency-exchange/CriptoBotTG/public
+rm -rf /var/www/currency-exchange/CriptoBotTG/frontend-dist
 ENDSSH
 
 # 6. Очистка
@@ -75,7 +75,7 @@ rm -rf "$TEMP_DIR"
 echo "✅ Деплой завершен!"
 echo ""
 echo "📝 Следующие шаги:"
-echo "1. Настройте .env файл: ssh $SERVER 'nano /var/www/currency-exchange/backend/.env'"
+echo "1. Настройте .env файл: ssh $SERVER 'nano /var/www/currency-exchange/CriptoBotTG/backend/.env'"
 echo "2. Настройте Nginx (см. VPS_DEPLOY_GUIDE.md)"
 echo "3. Установите SSL: certbot --nginx -d ваш-домен.com"
 echo ""
