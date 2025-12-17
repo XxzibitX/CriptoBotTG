@@ -1497,20 +1497,22 @@ onMounted(() => {
 
   .content-wrapper {
     width: 100%;
-    padding: 20px 15px;
-    padding-top: max(20px, env(safe-area-inset-top, 20px)); /* Учитываем safe area */
-    padding-bottom: 30px;
+    
+    padding: 0;
+    border-radius: 0;
     margin: 0;
     box-sizing: border-box;
   }
 
   .center-container {
-    background-color: rgba(30, 30, 30, 0.85); /* Восстановлен правильный цвет */
+    background-color: rgba(30, 30, 30, 0);
+    backdrop-filter: blur();
+    border: 0;
     margin: 0;
     min-height: auto;
     height: auto;
     max-width: 100%;
-    border-radius: 20px; /* Восстановлен border-radius */
+    border-radius: 0;
   }
 
   .logo-container {
@@ -1636,16 +1638,16 @@ onMounted(() => {
   }
 
   .content-wrapper {
-    padding: 15px 10px;
-    padding-top: max(15px, env(safe-area-inset-top, 15px));
-    padding-bottom: 25px;
+    padding: 0;
+    border-radius: 0;
     box-sizing: border-box;
   }
 
   .center-container {
     padding: 20px 15px;
-    border-radius: 16px; /* Восстановлен border-radius */
+    border-radius: 0;
     min-height: auto;
+
   }
 
   .logo {
