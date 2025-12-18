@@ -1298,7 +1298,7 @@ onMounted(() => {
 }
 
 .rate-label {
-  font-size: 14px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.6);
   margin-bottom: 8px;
   text-transform: uppercase;
