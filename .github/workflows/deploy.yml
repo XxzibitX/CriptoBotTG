@@ -1,62 +1,97 @@
-- name: Deploy to VPS
-  uses: appleboy/ssh-action@v1.0.3
-  with:
-    host: ${{ secrets.VPS_HOST }}
-    username: ${{ secrets.VPS_USER }}
-    key: ${{ secrets.VPS_SSH_KEY }}
-    script: |
-      # Переходим в папку проекта на сервере
-      cd /var/www/currency-exchange/CriptoBotTG
-      
-      echo "⬇️ Загружаем обновления из Git..."
-      git fetch origin
-      git reset --hard origin/main
-      
-      echo "🔍 Проверяем целостность package.json..."
-      cd backend
-      if ! node -e "JSON.parse(require('fs').readFileSync('package.json', 'utf8'))" 2>/dev/null; then
-        echo "❌ Ошибка в backend/package.json! Восстанавливаем..."
-        git checkout HEAD -- package.json
-      fi
-      
-      echo "🔄 Обновляем бекенд..."
-      npm install --production
-      pm2 restart currency-backend || pm2 start proxy.js --name "currency-backend"
-      
-      # --- Фронтенд ---
-      cd ../frontend
-      echo "🔄 Собираем фронтенд..."
-      npm ci
-      npm run build
-      
-      # 🔥 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Копируем файлы фронтенда в public/
-      echo "📁 Копируем файлы фронтенда..."
-      # Убедимся, что папка public существует
-      mkdir -p ../public
-      # Копируем ВСЁ из dist в public (с удалением старых файлов)
-      rm -rf ../public/*
-      cp -r dist/* ../public/
-      
-      # --- Telegram бот на Telegraf ---
-      cd ../telegram-bot-telegraf
-      echo "🤖 Обновляем Telegram бота..."
-      
-      # Проверяем, есть ли файлы бота
-      if [ -f "package.json" ]; then
-        echo "📦 Устанавливаем зависимости бота..."
-        npm install --production
-        
-        if pm2 list | grep -q "vertex-bot-telegraf"; then
-          pm2 restart vertex-bot-telegraf
-        else
-          if [ ! -f ".env" ]; then
-            echo "⚠️ ВНИМАНИЕ: .env не найден. Бот не запустится без токена!"
-          fi
-          pm2 start bot.js --name "vertex-bot-telegraf"
-          pm2 save
-        fi
-      else
-        echo "⚠️ Папка бота пуста или отсутствует package.json. Пропускаем."
-      fi
-      
-      echo "✅ Деплой завершен!"
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Ручной запуск
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Переходим в папку проекта на сервере
+            cd /var/www/currency-exchange/CriptoBotTG
+            
+            echo "⬇️ Загружаем обновления из Git..."
+            
+            # 1. Жёсткий сброс к состоянию репозитория
+            git fetch origin
+            git reset --hard origin/main
+            
+            # 2. Очищаем неотслеживаемые файлы (сгенерированные)
+            git clean -fd frontend/dist/ 2>/dev/null || true
+            
+            echo "🔍 Проверяем целостность файлов..."
+            
+            # --- Бекенд ---
+            cd backend
+            # Проверяем package.json
+            if ! node -e "JSON.parse(require('fs').readFileSync('package.json', 'utf8'))" 2>/dev/null; then
+              echo "❌ Ошибка в package.json! Восстанавливаем..."
+              git checkout HEAD -- package.json
+            fi
+            
+            echo "🔄 Обновляем бекенд..."
+            npm install --production
+            pm2 restart currency-backend || pm2 start proxy.js --name "currency-backend"
+            
+            # --- Фронтенд ---
+            cd ../frontend
+            echo "🔄 Собираем фронтенд..."
+            npm ci
+            npm run build
+            cp -r dist/* ../public/
+            
+            # --- Telegram бот на Telegraf ---
+            echo "🤖 Обновляем Telegram бота..."
+            cd ../telegram-bot-telegraf
+            
+            # ПРОСТАЯ ПРОВЕРКА: если папка существует и есть package.json
+            if [ -f "package.json" ]; then
+              echo "📦 Устанавливаем зависимости бота..."
+              npm install --production
+              
+              if pm2 list | grep -q "vertex-bot-telegraf"; then
+                pm2 restart vertex-bot-telegraf
+              else
+                # Проверяем наличие .env
+                if [ ! -f ".env" ]; then
+                  echo "⚠️ ВНИМАНИЕ: .env не найден. Бот не запустится без токена!"
+                fi
+                pm2 start bot.js --name "vertex-bot-telegraf"
+                pm2 save
+              fi
+            else
+              echo "⚠️ Папка бота пуста или отсутствует package.json. Пропускаем."
+              echo "ℹ️ Добавьте файлы бота в репозиторий и запушите изменения."
+            fi
+            
+            echo "✅ Деплой завершен!"
