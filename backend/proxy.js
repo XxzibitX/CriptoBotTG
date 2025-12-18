@@ -1,9 +1,10 @@
-require('dotenv').config()
+const path = require('path')
+// Загружаем .env файл с явным указанием пути
+require('dotenv').config({ path: path.join(__dirname, '.env') })
 
 const express = require('express')
 const fetch = require('node-fetch')
 const fs = require('fs').promises
-const path = require('path')
 
 const app = express()
 
@@ -17,13 +18,11 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID
 const TELEGRAM_API_URL = TELEGRAM_BOT_TOKEN ? `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}` : null
 
-// Отладочный вывод (только если токены не установлены)
-if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_ADMIN_CHAT_ID) {
-  console.log('⚠️ Telegram Bot не настроен:')
-  console.log('  TELEGRAM_BOT_TOKEN:', TELEGRAM_BOT_TOKEN ? 'SET' : 'NOT SET')
-  console.log('  TELEGRAM_ADMIN_CHAT_ID:', TELEGRAM_ADMIN_CHAT_ID ? 'SET' : 'NOT SET')
-  console.log('  Проверьте файл .env в:', path.join(__dirname, '.env'))
-}
+// Отладочный вывод
+console.log('🔍 Проверка переменных окружения:')
+console.log('  .env файл:', path.join(__dirname, '.env'))
+console.log('  TELEGRAM_BOT_TOKEN:', TELEGRAM_BOT_TOKEN ? `SET (${TELEGRAM_BOT_TOKEN.substring(0, 10)}...)` : 'NOT SET')
+console.log('  TELEGRAM_ADMIN_CHAT_ID:', TELEGRAM_ADMIN_CHAT_ID ? `SET (${TELEGRAM_ADMIN_CHAT_ID})` : 'NOT SET')
 
 // Создаем директорию для данных, если её нет
 async function ensureDataDir() {
