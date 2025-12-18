@@ -12,7 +12,7 @@
         @close="removeNotification(notification.id)"
       />
     </div>
-    
+
     <div class="content-wrapper">
       <div class="center-container">
         <!-- Логотип -->
@@ -188,7 +188,7 @@
                     <span class="total-currency">RUB</span>
                   </div>
                   <div class="calculation-hint">
-                    {{ formData.amount || 0 }} USDT × {{ formatPrice(exchangeRate.bidPrice * 1.055) }} ₽
+                    {{ formData.amount || 0 }} USDT × {{ formatPrice(exchangeRate.bidPrice) }} ₽ + 5,5 %
                   </div>
                 </div>
 
@@ -526,7 +526,7 @@ function showNotification(type, title, message = '', duration = 5000) {
     message,
     duration
   })
-  
+
   // Автоматически удаляем через duration + анимация
   setTimeout(() => {
     removeNotification(id)
@@ -565,14 +565,14 @@ function calculateTotal() {
 function handleAmountInput(event) {
   const formatted = formatAmount(event.target.value)
   const parsed = parseAmount(formatted)
-  
+
   // Обновляем значение в input (отформатированное)
   event.target.value = formatted
-  
+
   // Сохраняем числовое значение
   formData.value.amount = parsed
   calculateTotal()
-  
+
   // Очищаем ошибку при вводе
   if (formErrors.value.amount) {
     delete formErrors.value.amount
@@ -583,7 +583,7 @@ function handleAmountInput(event) {
 function openApplicationForm() {
   if (!loading.value && !apiError.value && hasData.value) {
     showApplicationForm.value = true
-    
+
     // Сбрасываем все поля формы (клиент должен ввести данные самостоятельно)
     formData.value.name = ''
     formData.value.email = ''
@@ -594,7 +594,7 @@ function openApplicationForm() {
     formData.value.agreement = false
     formErrors.value = {}
     totalAmount.value = 0
-    
+
     // Показываем кнопку "Назад" в Telegram
     if (isTelegram.value) {
       showBackButton(() => {
@@ -612,13 +612,13 @@ async function submitApplication() {
   // Валидация формы
   formErrors.value = {}
   const validation = validateForm(formData.value)
-  
+
   if (!validation.isValid) {
     formErrors.value = validation.errors
     // Показываем первую ошибку
     const firstError = Object.values(validation.errors)[0]
     showNotification('error', 'Ошибка валидации', firstError)
-    
+
     // Прокручиваем к первой ошибке
     const firstErrorField = Object.keys(validation.errors)[0]
     const errorElement = document.getElementById(firstErrorField)
@@ -666,7 +666,7 @@ async function submitApplication() {
         })
         formErrors.value = { ...formErrors.value, ...serverErrors }
       }
-      
+
       throw new Error(data.message || 'Ошибка при отправке заявки')
     }
 
@@ -710,7 +710,7 @@ async function submitApplication() {
     setTimeout(() => {
       showApplicationForm.value = false
       hideBackButton()
-      
+
       // Сбрасываем форму (клиент должен ввести данные самостоятельно)
       formData.value.name = ''
       formData.value.email = ''
@@ -725,7 +725,7 @@ async function submitApplication() {
 
   } catch (error) {
     console.error('❌ Ошибка при отправке заявки:', error)
-    
+
     if (error.name === 'AbortError') {
       showNotification('error', 'Ошибка сети', 'Превышено время ожидания ответа от сервера')
     } else if (error.message.includes('Failed to fetch')) {
@@ -1485,7 +1485,7 @@ onMounted(() => {
 
   .content-wrapper {
     width: 100%;
-    
+
     padding: 0;
     border-radius: 0;
     margin: 0;
