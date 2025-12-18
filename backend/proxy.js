@@ -299,6 +299,51 @@ function formatAdminMessage(orderData) {
   return message
 }
 
+// Форматирование сообщения для клиента
+function formatClientMessage(orderData) {
+  const {
+    orderId,
+    name,
+    phone,
+    amount,
+    totalAmount,
+    paymentMethod,
+    comment,
+    exchangeRate,
+    telegramUser
+  } = orderData
+
+  let message = `✅ <b>Вы успешно оставили заявку на обмен валюты</b>\n\n`
+  message += `📋 <b>Ваша заявка:</b>\n\n`
+  message += `🆔 <b>Номер заявки:</b> #${orderId}\n`
+  message += `👤 <b>Имя:</b> ${name}\n`
+  message += `📞 <b>Телефон:</b> ${phone}\n`
+  
+  if (telegramUser && telegramUser.username) {
+    message += `\n📱 <b>Telegram:</b>\n`
+    message += `   • Username: @${telegramUser.username}\n`
+  }
+  
+  message += `\n💰 <b>Детали обмена:</b>\n`
+  message += `   • Сумма: <b>${amount} USDT</b>\n`
+  message += `   • К получению: <b>${parseFloat(totalAmount).toFixed(2)} RUB</b>\n`
+  
+  // Используем курс с комиссией (наш курс)
+  const ourRate = exchangeRate.bidPrice ? (parseFloat(exchangeRate.bidPrice) * 1.055).toFixed(2) : 
+                  exchangeRate.askPrice ? parseFloat(exchangeRate.askPrice).toFixed(2) : 'N/A'
+  message += `   • Курс: <code>${ourRate} ₽</code>\n`
+  message += `   • Способ оплаты: ${formatPaymentMethod(paymentMethod)}\n`
+  
+  if (comment && comment.trim()) {
+    message += `\n💬 <b>Комментарий:</b>\n${comment}\n`
+  }
+  
+  message += `\n⏰ <b>Время:</b> ${new Date().toLocaleString('ru-RU')}\n\n`
+  message += `👨‍💼 <b>Администратор скоро свяжется с вами</b>`
+  
+  return message
+}
+
 // Эндпоинт для отправки сообщения администратору через Telegram
 app.post('/api/telegram/send', async (req, res) => {
   try {
@@ -352,10 +397,42 @@ app.post('/api/telegram/send', async (req, res) => {
 
     console.log(`✅ Сообщение отправлено администратору в Telegram (заявка #${orderData.orderId})`)
 
+    // Отправляем сообщение клиенту, если у него есть Telegram ID
+    let clientMessageSent = false
+    if (orderData.telegramUser && orderData.telegramUser.id) {
+      try {
+        const clientMessage = formatClientMessage(orderData)
+        const clientResponse = await fetch(`${TELEGRAM_API_URL}/sendMessage`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            chat_id: orderData.telegramUser.id,
+            text: clientMessage,
+            parse_mode: 'HTML',
+            disable_web_page_preview: true
+          })
+        })
+
+        if (clientResponse.ok) {
+          clientMessageSent = true
+          console.log(`✅ Сообщение отправлено клиенту в Telegram (заявка #${orderData.orderId})`)
+        } else {
+          const clientError = await clientResponse.json()
+          console.warn(`⚠️ Не удалось отправить сообщение клиенту: ${clientError.description || 'Unknown error'}`)
+        }
+      } catch (clientError) {
+        console.warn(`⚠️ Ошибка при отправке сообщения клиенту: ${clientError.message}`)
+        // Не прерываем процесс, если отправка клиенту не удалась
+      }
+    }
+
     res.json({
       success: true,
       message: 'Сообщение успешно отправлено администратору',
       messageId: telegramData.result?.message_id,
+      clientMessageSent: clientMessageSent,
       timestamp: new Date().toISOString()
     })
 
