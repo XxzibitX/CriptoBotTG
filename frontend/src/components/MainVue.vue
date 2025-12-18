@@ -17,8 +17,8 @@
       <div class="center-container">
         <!-- Логотип -->
         <div class="logo-container">
-          <div class="logo">$</div>
-          <h1 class="logo-title">Currency Exchange</h1>
+          <img src="/IMG_4572.WEBP" alt="Logo" class="logo-image" />
+          <h1 class="logo-title">Vertex</h1>
           <p class="logo-subtitle">Безопасный обмен валюты</p>
         </div>
 
@@ -73,9 +73,9 @@
 
               <div class="rate-info">
                 <div class="info-item">
-                  <span class="info-label">Обновлено:</span>
+                  <span class="info-label">Обновление:</span>
                   <!-- <span class="info-value">{{ formattedLastUpdateTime }}</span> -->
-                  <span class="info-value">30 секунд назад</span>
+                  <span class="info-value">каждые 30 секунд</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">Изменение за 24ч:</span>
@@ -111,8 +111,8 @@
                   <span class="rate-value">{{ formatPrice(exchangeRate.askPrice) }} ₽ за 1 USDT</span>
                 </div>
                 <div class="rate-summary-item">
-                  <span class="rate-label">Курс обновлен:</span>
-                  <span class="rate-value">{{ formattedLastUpdateTime }}</span>
+                  <span class="rate-label">Ваш бонус к сумме:</span>
+                  <span class="rate-value">+5,5 %</span>
                 </div>
               </div>
 
@@ -188,7 +188,7 @@
                     <span class="total-currency">RUB</span>
                   </div>
                   <div class="calculation-hint">
-                    {{ formData.amount || 0 }} USDT × {{ formatPrice(exchangeRate.askPrice) }} ₽
+                    {{ formData.amount || 0 }} USDT × {{ formatPrice(exchangeRate.askPrice) }} ₽ + 5,5 %
                   </div>
                 </div>
 
@@ -261,9 +261,9 @@
           :disabled="loading || apiError || !hasData"
           :class="{ 'disabled': loading || apiError || !hasData }"
         >
-          <span class="btn-icon">📝</span>
+          <span class="btn-icon"></span>
           {{ getButtonText }}
-          <span class="btn-arrow">→</span>
+          <span class="btn-arrow"></span>
         </button>
       </div>
     </div>
@@ -550,10 +550,11 @@ function handlePhoneInput(event) {
   }
 }
 
-// Расчет итоговой суммы
+// Расчет итоговой суммы (+5.5% комиссия)
 function calculateTotal() {
   if (formData.value.amount && exchangeRate.value.askPrice) {
-    totalAmount.value = formData.value.amount * exchangeRate.value.askPrice
+    const baseAmount = formData.value.amount * exchangeRate.value.askPrice
+    totalAmount.value = baseAmount * 1.055 // +5.5%
   } else {
     totalAmount.value = 0
   }
@@ -1390,18 +1391,13 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.logo {
-  font-size: 60px;
+.logo-image {
   width: 100px;
   height: 100px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: cover;
   margin: 0 auto 20px;
-  color: white;
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 10px 30px rgba(127, 127, 127, 0.3);
 }
 
 .logo-title {
@@ -1510,10 +1506,9 @@ onMounted(() => {
     margin-bottom: 30px;
   }
 
-  .logo {
+  .logo-image {
     width: 70px;
     height: 70px;
-    font-size: 42px;
     margin-bottom: 15px;
   }
 
@@ -1641,10 +1636,9 @@ onMounted(() => {
 
   }
 
-  .logo {
+  .logo-image {
     width: 60px;
     height: 60px;
-    font-size: 36px;
     margin-bottom: 12px;
   }
 
@@ -1750,10 +1744,9 @@ onMounted(() => {
     padding: 18px 12px;
   }
 
-  .logo {
+  .logo-image {
     width: 50px;
     height: 50px;
-    font-size: 30px;
   }
 
   .logo-title {
@@ -1792,10 +1785,9 @@ onMounted(() => {
     margin-bottom: 20px;
   }
 
-  .logo {
+  .logo-image {
     width: 50px;
     height: 50px;
-    font-size: 32px;
   }
 }
 </style>
