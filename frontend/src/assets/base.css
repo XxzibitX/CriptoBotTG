@@ -1,20 +1,16 @@
-/* ============================================
-   CSS Variables and Theme
-   ============================================ */
-
-/* Базовые переменные для темной темы (используется в приложении) */
+/* Определение глобальных CSS переменных */
 :root {
+  /* Основной цвет фона (темный) */
   --color-background: #181818;
+  /* Основной цвет текста (светло-серый с прозрачностью) */
   --color-text: rgba(235, 235, 235, 0.64);
 }
 
-/* ============================================
-   Typography and Base Styles
-   ============================================ */
-
+/* Базовые стили для body */
 body {
   color: var(--color-text);
   background: var(--color-background);
+  /* Системные шрифты для лучшей производительности и нативности */
   font-family:
     Inter,
     -apple-system,
@@ -30,6 +26,7 @@ body {
     sans-serif;
   font-size: 15px;
   font-weight: normal;
+  /* Оптимизация рендеринга текста */
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

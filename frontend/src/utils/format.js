@@ -1,24 +1,26 @@
 /**
  * Форматирование телефона в формат +7 (999) 123-45-67
+ * @param {string} value - Исходный номер телефона
+ * @returns {string} - Отформатированный номер телефона
  */
 export function formatPhone(value) {
   // Убираем все нецифровые символы
   let cleaned = value.replace(/\D/g, '')
   
-  // Если начинается с 8, заменяем на 7
+  // Если начинается с 8, заменяем на 7 (международный формат РФ)
   if (cleaned.startsWith('8')) {
     cleaned = '7' + cleaned.slice(1)
   }
   
-  // Если не начинается с 7, добавляем
+  // Если не начинается с 7, добавляем (подразумеваем РФ)
   if (!cleaned.startsWith('7') && cleaned.length > 0) {
     cleaned = '7' + cleaned
   }
   
-  // Ограничиваем длину (11 цифр: 7 + 10)
+  // Ограничиваем длину (11 цифр: 7 + 10 цифр номера)
   cleaned = cleaned.slice(0, 11)
   
-  // Форматируем
+  // Применяем маску форматирования
   if (cleaned.length === 0) {
     return ''
   } else if (cleaned.length <= 1) {
@@ -36,6 +38,8 @@ export function formatPhone(value) {
 
 /**
  * Форматирование суммы с разделителями тысяч
+ * @param {string|number} value - Сумма
+ * @returns {string} - Отформатированная сумма (например, "1 000.00")
  */
 export function formatAmount(value) {
   if (!value && value !== 0) return ''
@@ -51,7 +55,7 @@ export function formatAmount(value) {
   // Ограничиваем дробную часть до 2 знаков
   const limitedDecimal = decimalPart.slice(0, 2)
   
-  // Добавляем разделители тысяч
+  // Добавляем разделители тысяч (пробелы)
   integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
   
   // Собираем обратно
@@ -64,6 +68,8 @@ export function formatAmount(value) {
 
 /**
  * Парсинг отформатированной суммы обратно в число
+ * @param {string} formattedValue - Отформатированная строка суммы
+ * @returns {number|null} - Числовое значение или null
  */
 export function parseAmount(formattedValue) {
   if (!formattedValue) return null

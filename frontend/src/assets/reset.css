@@ -1,64 +1,59 @@
-/* ============================================
-   Modern CSS Reset (Andy Bell's Reset)
-   ============================================ */
-
-/* Box sizing rules */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* Remove default margin and padding */
+/* Убираем стандартные отступы */
 * {
   margin: 0;
   padding: 0;
 }
 
-/* Prevent font size inflation */
+/* Предотвращаем увеличение размера шрифта */
 html {
   -moz-text-size-adjust: none;
   -webkit-text-size-adjust: none;
   text-size-adjust: none;
 }
 
-/* Remove default margin in favour of better control in authored CSS */
+/* Убираем стандартные отступы для лучшего контроля в CSS */
 body,
 h1, h2, h3, h4, h5, h6,
 p, figure, blockquote, dl, dd {
   margin: 0;
 }
 
-/* Remove list styles on ul, ol elements with a list role, which suggests default styling will be removed */
+/* Убираем стили списков для элементов с ролью list */
 ul[role='list'],
 ol[role='list'] {
   list-style: none;
 }
 
-/* Set core body defaults */
+/* Базовые настройки body */
 body {
   min-height: 100vh;
   line-height: 1.5;
 }
 
-/* Set shorter line heights on headings and interactive elements */
+/* Уменьшаем высоту строки для заголовков и интерактивных элементов */
 h1, h2, h3, h4,
 button, input, label {
   line-height: 1.1;
 }
 
-/* Balance text wrapping on headings */
+/* Балансировка переноса текста в заголовках */
 h1, h2, h3, h4 {
   text-wrap: balance;
 }
 
-/* A elements that don't have a class get default styles */
+/* Элементы ссылок без класса получают стандартные стили */
 a:not([class]) {
   text-decoration-skip-ink: auto;
   color: currentColor;
 }
 
-/* Make images easier to work with */
+/* Упрощаем работу с изображениями */
 img,
 picture,
 svg {
@@ -66,17 +61,17 @@ svg {
   display: block;
 }
 
-/* Make sure textareas without a rows attribute are not tiny */
+/* Убеждаемся, что textarea без атрибута rows не слишком маленькие */
 textarea:not([rows]) {
   min-height: 10em;
 }
 
-/* Anything that has been anchored to should have extra scroll margin */
+/* Элементы, на которые есть якорная ссылка, должны иметь отступ прокрутки */
 :target {
   scroll-margin-block: 5ex;
 }
 
-/* Remove animations for people who've turned them off */
+/* Убираем анимации для пользователей, которые их отключили в системе */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -3,13 +3,20 @@
   <head>
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.ico">
+    <!-- Настройка viewport для корректного отображения на мобильных устройствах
+         user-scalable=yes и viewport-fit=cover важны для Telegram Web App -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Currency Exchange Bot</title>
-    <!-- Telegram Web App SDK -->
+    
+    <!-- Подключение Telegram Web App SDK
+         Обязательно для взаимодействия с API Telegram (получение данных пользователя, управление кнопками и т.д.) -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
+    <!-- Корневой элемент, в который будет смонтировано Vue приложение -->
     <div id="app"></div>
+    
+    <!-- Точка входа в JavaScript код приложения -->
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
