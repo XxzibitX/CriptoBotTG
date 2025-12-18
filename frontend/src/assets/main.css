@@ -1,17 +1,21 @@
-/* Подключение сброса стилей для кроссбраузерности */
+/* ============================================
+   Import Order: Reset → Base → Main
+   ============================================ */
 @import './reset.css';
-/* Подключение базовых стилей (переменные, шрифты) */
 @import './base.css';
 
-/* Настройки корневого элемента HTML */
+/* ============================================
+   Global Layout Styles
+   ============================================ */
+
+/* Убеждаемся, что html и body занимают весь экран */
 html {
   width: 100%;
   height: 100%;
-  overflow-x: hidden; /* Предотвращение горизонтальной прокрутки */
-  -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Настройки body */
 body {
   width: 100%;
   min-height: 100vh;
@@ -20,7 +24,7 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Основной контейнер приложения Vue */
+/* Основной контейнер приложения */
 #app {
   width: 100%;
   min-height: 100vh;

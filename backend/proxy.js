@@ -1,26 +1,30 @@
 const path = require('path')
-// Загрузка переменных окружения из файла .env
+// Загружаем .env файл с явным указанием пути
 require('dotenv').config({ path: path.join(__dirname, '.env') })
 
 const express = require('express')
 const fetch = require('node-fetch')
 const fs = require('fs').promises
 
-// Инициализация Express приложения
 const app = express()
 
-// Константы и конфигурация
+// Конфигурация
 const RAPIRA_API_URL = process.env.RAPIRA_API_URL || 'https://api.rapira.net/open/market/rates'
 const ORDERS_FILE = process.env.ORDERS_FILE || path.join(__dirname, 'data', 'orders.json')
 const DATA_DIR = path.dirname(ORDERS_FILE)
 
+// Telegram Bot Configuration
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID
 const TELEGRAM_API_URL = TELEGRAM_BOT_TOKEN ? `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}` : null
 
-/**
- * Создает директорию для данных, если она не существует
- */
+// Отладочный вывод
+console.log('🔍 Проверка переменных окружения:')
+console.log('  .env файл:', path.join(__dirname, '.env'))
+console.log('  TELEGRAM_BOT_TOKEN:', TELEGRAM_BOT_TOKEN ? `SET (${TELEGRAM_BOT_TOKEN.substring(0, 10)}...)` : 'NOT SET')
+console.log('  TELEGRAM_ADMIN_CHAT_ID:', TELEGRAM_ADMIN_CHAT_ID ? `SET (${TELEGRAM_ADMIN_CHAT_ID})` : 'NOT SET')
+
+// Создаем директорию для данных, если её нет
 async function ensureDataDir() {
   try {
     await fs.mkdir(DATA_DIR, { recursive: true })
@@ -30,8 +34,7 @@ async function ensureDataDir() {
 }
 ensureDataDir()
 
-// Настройка CORS (Cross-Origin Resource Sharing)
-// Позволяет фронтенду делать запросы к этому API
+// Разрешаем CORS для всех доменов
 app.use((req, res, next) => {
   const allowedHeaders = [
     'Origin',
@@ -53,27 +56,22 @@ app.use((req, res, next) => {
   next()
 })
 
-// Middleware для парсинга JSON тела запроса
 app.use(express.json())
 
-// Middleware для логирования запросов
+// Middleware для логов
 app.use((req, res, next) => {
   const timestamp = new Date().toISOString()
   console.log(`[${timestamp}] ${req.method} ${req.url}`)
   next()
 })
 
-/**
- * GET /api/rates
- * Получение актуальных курсов валют с внешнего API (Rapira)
- */
+// Прокси для получения курсов с Rapira API
 app.get('/api/rates', async (req, res) => {
   try {
     console.log('📡 Запрос курсов валют к Rapira API...')
     
-    // Создаем контроллер для отмены запроса по таймауту
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 секунд таймаут
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
     
     const response = await fetch(RAPIRA_API_URL, {
       headers: {
@@ -99,9 +97,7 @@ app.get('/api/rates', async (req, res) => {
     const data = await response.json()
     console.log(`✅ Получено ${data.data?.length || 0} валютных пар`)
     
-    // Проверяем корректность ответа
     if (data.code === 0 && Array.isArray(data.data)) {
-      // Ищем пару USDT/RUB
       const usdtRubData = data.data.find(item => item.symbol === 'USDT/RUB')
       
       if (usdtRubData) {
@@ -155,11 +151,7 @@ app.get('/api/rates', async (req, res) => {
   }
 })
 
-/**
- * Валидация данных заявки
- * @param {Object} order - Данные заявки
- * @returns {Array} - Массив ошибок (пустой, если ошибок нет)
- */
+// Валидация данных заявки
 function validateOrder(order) {
   const errors = []
   
@@ -186,10 +178,7 @@ function validateOrder(order) {
   return errors
 }
 
-/**
- * POST /api/orders
- * Создание новой заявки на обмен
- */
+// Эндпоинт для сохранения заявок
 app.post('/api/orders', async (req, res) => {
   try {
     const orderData = req.body
@@ -205,8 +194,8 @@ app.post('/api/orders', async (req, res) => {
         timestamp: new Date().toISOString()
       })
     }
-
-    // Создаем объект заявки
+    
+    // Создаем заявку
     const order = {
       id: Date.now().toString(),
       ...orderData,
@@ -215,18 +204,20 @@ app.post('/api/orders', async (req, res) => {
       updatedAt: new Date().toISOString()
     }
     
-    // Чтение существующих заявок
+    // Читаем существующие заявки
     let orders = []
     try {
       const data = await fs.readFile(ORDERS_FILE, 'utf8')
       orders = JSON.parse(data)
     } catch (error) {
-      // Если файла нет или ошибка парсинга, начинаем с пустого массива
+      // Файл не существует или пустой - создаем новый массив
       orders = []
     }
     
-    // Добавление и сохранение
+    // Добавляем новую заявку
     orders.push(order)
+    
+    // Сохраняем в файл
     await fs.writeFile(ORDERS_FILE, JSON.stringify(orders, null, 2), 'utf8')
     
     console.log(`✅ Заявка #${order.id} успешно сохранена`)
@@ -254,9 +245,7 @@ app.post('/api/orders', async (req, res) => {
   }
 })
 
-/**
- * Форматирует название метода оплаты для отображения
- */
+// Форматирование способа оплаты для сообщения
 function formatPaymentMethod(method) {
   const methods = {
     'bank_card': '💳 Банковская карта',
@@ -268,9 +257,7 @@ function formatPaymentMethod(method) {
   return methods[method] || method
 }
 
-/**
- * Формирует HTML сообщение для администратора
- */
+// Форматирование сообщения для администратора
 function formatAdminMessage(orderData) {
   const {
     orderId,
@@ -323,9 +310,7 @@ function formatAdminMessage(orderData) {
   return message
 }
 
-/**
- * Формирует HTML сообщение для клиента
- */
+// Форматирование сообщения для клиента
 function formatClientMessage(orderData) {
   const {
     orderId,
@@ -354,9 +339,11 @@ function formatClientMessage(orderData) {
   message += `   • Сумма: <b>${amount} USDT</b>\n`
   message += `   • К получению: <b>${parseFloat(totalAmount).toFixed(2)} RUB</b>\n`
   
+  // Курс на Rapira (оригинальный)
   const rapiraRate = exchangeRate.bidPrice ? parseFloat(exchangeRate.bidPrice).toFixed(2) : 
                      exchangeRate.askPrice ? parseFloat(exchangeRate.askPrice).toFixed(2) : 'N/A'
   
+  // Наш курс (с комиссией) - рассчитываем из totalAmount и amount
   const ourRate = amount && totalAmount ? (parseFloat(totalAmount) / parseFloat(amount)).toFixed(2) : 
                   exchangeRate.bidPrice ? (parseFloat(exchangeRate.bidPrice) * 1.055).toFixed(2) : 
                   exchangeRate.askPrice ? parseFloat(exchangeRate.askPrice).toFixed(2) : 'N/A'
@@ -375,10 +362,7 @@ function formatClientMessage(orderData) {
   return message
 }
 
-/**
- * POST /api/telegram/send
- * Отправка уведомлений в Telegram (админу и клиенту)
- */
+// Эндпоинт для отправки сообщения администратору через Telegram
 app.post('/api/telegram/send', async (req, res) => {
   try {
     // Проверяем наличие конфигурации Telegram
@@ -394,13 +378,15 @@ app.post('/api/telegram/send', async (req, res) => {
     }
 
     const orderData = req.body
+    
+    // Форматируем сообщение
     const message = formatAdminMessage(orderData)
     
+    // Отправляем сообщение через Telegram Bot API
     if (!TELEGRAM_API_URL) {
       throw new Error('TELEGRAM_API_URL не настроен')
     }
     
-    // Отправка сообщения админу
     const telegramResponse = await fetch(`${TELEGRAM_API_URL}/sendMessage`, {
       method: 'POST',
       headers: {
@@ -429,7 +415,7 @@ app.post('/api/telegram/send', async (req, res) => {
 
     console.log(`✅ Сообщение отправлено администратору в Telegram (заявка #${orderData.orderId})`)
 
-    // Отправка сообщения клиенту (если есть ID)
+    // Отправляем сообщение клиенту, если у него есть Telegram ID
     let clientMessageSent = false
     if (orderData.telegramUser && orderData.telegramUser.id) {
       try {
@@ -456,6 +442,7 @@ app.post('/api/telegram/send', async (req, res) => {
         }
       } catch (clientError) {
         console.warn(`⚠️ Ошибка при отправке сообщения клиенту: ${clientError.message}`)
+        // Не прерываем процесс, если отправка клиенту не удалась
       }
     }
 
@@ -479,10 +466,7 @@ app.post('/api/telegram/send', async (req, res) => {
   }
 })
 
-/**
- * GET /api/health
- * Проверка работоспособности сервиса
- */
+// Health check эндпоинт
 app.get('/api/health', async (req, res) => {
   try {
     const testResponse = await fetch(RAPIRA_API_URL, {
@@ -512,7 +496,7 @@ app.get('/api/health', async (req, res) => {
   }
 })
 
-// Обработка 404 для неизвестных эндпоинтов
+// Обработка 404
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -535,10 +519,11 @@ app.use((error, req, res, next) => {
   })
 })
 
-const PORT = process.env.PORT || 3000
-const HOST = process.env.HOST || '0.0.0.0'
-
 // Запуск сервера
+const PORT = process.env.PORT || 3000
+// Используем 0.0.0.0 для доступа извне, localhost только для разработки
+const HOST = process.env.HOST || (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '0.0.0.0')
+
 app.listen(PORT, HOST, () => {
   console.log(`
 ╔══════════════════════════════════════════════════════╗

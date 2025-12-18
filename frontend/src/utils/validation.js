@@ -1,7 +1,5 @@
 /**
  * Валидация имени и фамилии
- * @param {string} name - Имя и фамилия
- * @returns {string|null} - Сообщение об ошибке или null
  */
 export function validateName(name) {
   if (!name || !name.trim()) {
@@ -46,8 +44,6 @@ export function validateName(name) {
 
 /**
  * Валидация телефона
- * @param {string} phone - Номер телефона
- * @returns {string|null} - Сообщение об ошибке или null
  */
 export function validatePhone(phone) {
   if (!phone) {
@@ -67,8 +63,6 @@ export function validatePhone(phone) {
 
 /**
  * Валидация суммы
- * @param {string|number} amount - Сумма обмена
- * @returns {string|null} - Сообщение об ошибке или null
  */
 export function validateAmount(amount) {
   if (!amount || amount === null || amount === undefined) {
@@ -100,8 +94,6 @@ export function validateAmount(amount) {
 
 /**
  * Валидация способа оплаты
- * @param {string} method - Код способа оплаты
- * @returns {string|null} - Сообщение об ошибке или null
  */
 export function validatePaymentMethod(method) {
   if (!method) {
@@ -118,8 +110,6 @@ export function validatePaymentMethod(method) {
 
 /**
  * Валидация согласия
- * @param {boolean} agreement - Флаг согласия
- * @returns {string|null} - Сообщение об ошибке или null
  */
 export function validateAgreement(agreement) {
   if (!agreement) {
@@ -130,8 +120,6 @@ export function validateAgreement(agreement) {
 
 /**
  * Валидация всей формы
- * @param {Object} formData - Объект с данными формы
- * @returns {Object} - Результат валидации { isValid, errors }
  */
 export function validateForm(formData) {
   const errors = {}

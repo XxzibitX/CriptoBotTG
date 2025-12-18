@@ -2,35 +2,30 @@ import { ref, onMounted } from 'vue'
 
 /**
  * Composable для работы с Telegram Web App SDK
- * Предоставляет реактивные данные и методы для взаимодействия с Telegram
- * @returns {Object} Объект с данными и методами Telegram Web App
  */
 export function useTelegram() {
-  // Состояния
-  const isTelegram = ref(false) // Запущено ли приложение внутри Telegram
-  const webApp = ref(null)      // Объект Telegram.WebApp
-  const user = ref(null)        // Данные пользователя (id, username и т.д.)
-  const initData = ref(null)    // Строка инициализации для валидации на бэкенде
+  const isTelegram = ref(false)
+  const webApp = ref(null)
+  const user = ref(null)
+  const initData = ref(null)
 
   onMounted(() => {
     // Проверяем, запущено ли приложение в Telegram
-    // window.Telegram.WebApp доступен только внутри Telegram клиента
     if (window.Telegram && window.Telegram.WebApp) {
       isTelegram.value = true
       webApp.value = window.Telegram.WebApp
       
-      // Инициализируем Web App (сообщаем Telegram, что приложение готово)
+      // Инициализируем Web App
       webApp.value.ready()
       
-      // Разворачиваем на весь экран (полезно для мобильных)
+      // Разворачиваем на весь экран
       webApp.value.expand()
       
       // Получаем данные пользователя
-      // initDataUnsafe содержит невалидированные данные, initData - подписанную строку
       user.value = webApp.value.initDataUnsafe?.user || null
       initData.value = webApp.value.initData || null
       
-      // Настраиваем цветовую схему приложения в соответствии с темой Telegram
+      // Настраиваем цветовую схему
       if (webApp.value.colorScheme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark')
       }
@@ -42,9 +37,6 @@ export function useTelegram() {
 
   /**
    * Отправить данные боту
-   * Бот получит сообщение с данными (web_app_data)
-   * @param {Object} data - Данные для отправки
-   * @returns {boolean} - Успешно ли отправлено
    */
   function sendDataToBot(data) {
     if (!webApp.value) {
@@ -62,7 +54,7 @@ export function useTelegram() {
   }
 
   /**
-   * Закрыть приложение Web App
+   * Закрыть приложение
    */
   function closeApp() {
     if (webApp.value) {
@@ -71,9 +63,7 @@ export function useTelegram() {
   }
 
   /**
-   * Показать главную кнопку (внизу экрана)
-   * @param {string} text - Текст кнопки
-   * @param {Function} onClick - Обработчик нажатия
+   * Показать главную кнопку
    */
   function showMainButton(text, onClick) {
     if (!webApp.value) return
@@ -93,8 +83,7 @@ export function useTelegram() {
   }
 
   /**
-   * Показать кнопку "Назад" (в заголовке)
-   * @param {Function} onClick - Обработчик нажатия
+   * Показать кнопку "Назад"
    */
   function showBackButton(onClick) {
     if (!webApp.value) return
@@ -113,8 +102,7 @@ export function useTelegram() {
   }
 
   /**
-   * Показать нативное всплывающее окно
-   * @param {string} message - Текст сообщения
+   * Показать всплывающее окно
    */
   function showAlert(message) {
     if (webApp.value) {
@@ -125,9 +113,7 @@ export function useTelegram() {
   }
 
   /**
-   * Показать нативное окно подтверждения
-   * @param {string} message - Текст вопроса
-   * @returns {Promise<boolean>} - Результат выбора (true/false)
+   * Показать подтверждение
    */
   function showConfirm(message) {
     if (webApp.value) {

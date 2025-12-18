@@ -12,7 +12,7 @@
         @close="removeNotification(notification.id)"
       />
     </div>
-
+    
     <div class="content-wrapper">
       <div class="center-container">
         <!-- Логотип -->
@@ -28,7 +28,6 @@
             <div class="exchange-header">
               <img :src="usdtIcon" alt="USDT" class="currency-flag" />
               <h2>USDT/RUB</h2>
-              <!-- Индикатор статуса соединения -->
               <div class="connection-status" :class="connectionStatusClass">
                 {{ connectionStatusIcon }}
               </div>
@@ -55,7 +54,6 @@
             <!-- Основной контент курса -->
             <div v-else-if="hasData" class="rates-content">
               <div class="exchange-rates">
-                <!-- Блок курса биржи -->
                 <div class="rate-block buy">
                   <div class="rate-label">Курс на Rapira</div>
                   <div class="rate-value">{{ formatPrice(exchangeRate.bidPrice) }} ₽</div>
@@ -64,7 +62,6 @@
                   </div>
                 </div>
 
-                <!-- Блок нашего курса с комиссией -->
                 <div class="rate-block sell">
                   <div class="rate-label">Наш курс</div>
                   <div class="rate-value">{{ formatPrice(exchangeRate.bidPrice * 1.055) }} ₽</div>
@@ -74,10 +71,10 @@
                 </div>
               </div>
 
-              <!-- Детальная информация -->
               <div class="rate-info">
                 <div class="info-item">
                   <span class="info-label">Обновление:</span>
+                  <!-- <span class="info-value">{{ formattedLastUpdateTime }}</span> -->
                   <span class="info-value">каждые 30 секунд</span>
                 </div>
                 <div class="info-item">
@@ -107,7 +104,7 @@
             </div>
 
             <div class="form-content">
-              <!-- Информация о курсе в форме -->
+              <!-- Информация о курсе -->
               <div class="rate-summary">
                 <div class="rate-summary-item">
                   <span class="rate-label">Текущий курс:</span>
@@ -135,6 +132,18 @@
                   />
                   <span v-if="formErrors.name" class="form-error">{{ formErrors.name }}</span>
                 </div>
+
+                <!-- <div class="form-group">
+                  <label for="email">Email *</label>
+                  <input
+                    type="email"
+                    id="email"
+                    v-model="formData.email"
+                    required
+                    placeholder="example@mail.ru"
+                    class="form-input"
+                  />
+                </div> -->
 
                 <div class="form-group">
                   <label for="phone">Телефон для перевода по СБП*</label>
@@ -269,32 +278,34 @@ import ToastNotification from './ToastNotification.vue'
 import { useTelegram } from '../composables/useTelegram.js'
 import usdtIcon from './icons/usdt.svg'
 
-// Используем composable для работы с Telegram Web App
+// Telegram Web App
 const {
   isTelegram,
   user: telegramUser,
+  sendDataToBot,
+  showMainButton,
+  hideMainButton,
   showBackButton,
   hideBackButton
 } = useTelegram()
 
-// Управление видимостью формы
 const showApplicationForm = ref(false)
 
-// Состояния загрузки и ошибок
+// Состояния
 const loading = ref(true)
 const apiError = ref(false)
 const errorMessage = ref('')
 const lastSuccessfulFetchTime = ref(null)
 
-// Данные о курсе валют
+// Данные курса
 const exchangeRate = ref({
-  bidPrice: null, // Цена покупки
-  askPrice: null, // Цена продажи
-  chg: null,      // Изменение в процентах
-  change: null,   // Изменение в абсолютных значениях
+  bidPrice: null,
+  askPrice: null,
+  chg: null,
+  change: null,
 })
 
-// Данные формы заявки
+// Данные формы
 const formData = ref({
   name: '',
   email: '',
@@ -305,19 +316,17 @@ const formData = ref({
   agreement: false
 })
 
-// Ошибки валидации формы
+// Ошибки валидации
 const formErrors = ref({})
 
-// Состояние уведомлений (список активных тостов)
+// Состояние уведомлений
 const notifications = ref([])
 
-// Состояние отправки формы
 const formSubmitting = ref(false)
-// Итоговая сумма к получению в рублях
 const totalAmount = ref(0)
 
 // API эндпоинты
-// Автоматическое определение базового URL в зависимости от окружения
+// Автоматическое определение базового URL
 const getApiBaseUrl = () => {
   // В production используем текущий домен (тот же, где загружен Frontend)
   if (import.meta.env.PROD) {
@@ -331,9 +340,9 @@ const API_BASE_URL = getApiBaseUrl()
 const API_URL = `${API_BASE_URL}/api/rates`
 const API_ORDERS_URL = `${API_BASE_URL}/api/orders`
 const API_TELEGRAM_URL = `${API_BASE_URL}/api/telegram/send`
-const UPDATE_INTERVAL = 30000 // Интервал обновления курса (30 сек)
+const UPDATE_INTERVAL = 30000
 
-// Computed свойства для отображения статуса
+// Computed свойства
 const connectionStatusClass = computed(() => {
   if (loading.value) return 'loading'
   if (apiError.value) return 'error'
@@ -348,13 +357,11 @@ const connectionStatusIcon = computed(() => {
   return '✗'
 })
 
-// Проверка наличия данных о курсе
 const hasData = computed(() => {
   return exchangeRate.value.bidPrice !== null &&
          exchangeRate.value.askPrice !== null
 })
 
-// Текст кнопки действия
 const getButtonText = computed(() => {
   if (loading.value) return 'Загрузка данных...'
   if (apiError.value) return 'Курс недоступен'
@@ -362,7 +369,32 @@ const getButtonText = computed(() => {
   return 'Оставить заявку'
 })
 
-// Сообщение о статусе актуальности данных
+const formattedLastUpdateTime = computed(() => {
+  if (!lastSuccessfulFetchTime.value) return '--:--:--'
+
+  const now = Date.now()
+  const lastUpdate = lastSuccessfulFetchTime.value
+  const diffSeconds = Math.floor((now - lastUpdate) / 1000)
+
+  if (diffSeconds < 60) {
+    return `${diffSeconds} сек назад`
+  } else if (diffSeconds < 3600) {
+    const minutes = Math.floor(diffSeconds / 60)
+    return `${minutes} мин назад`
+  } else if (diffSeconds < 86400) {
+    const hours = Math.floor(diffSeconds / 3600)
+    return `${hours} ч назад`
+  } else {
+    const date = new Date(lastUpdate)
+    return date.toLocaleDateString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+})
+
 const statusMessage = computed(() => {
   if (!lastSuccessfulFetchTime.value) return '⏳ Ожидание данных...'
 
@@ -381,21 +413,13 @@ const statusMessage = computed(() => {
   }
 })
 
-/**
- * Форматирование цены
- * @param {number|string} price - Цена
- * @returns {string} Отформатированная цена
- */
+// Форматирование цены
 function formatPrice(price) {
   if (price === null || price === undefined) return '--.--'
   return parseFloat(price).toFixed(2)
 }
 
-/**
- * Форматирование процентов
- * @param {number|string} chg - Изменение в долях (0.01 = 1%)
- * @returns {string} Отформатированные проценты
- */
+// Форматирование процентов
 function formatPercentage(chg) {
   if (chg === null || chg === undefined) return '--.--%'
   const percentage = parseFloat(chg) * 100
@@ -403,11 +427,7 @@ function formatPercentage(chg) {
   return `${sign}${percentage.toFixed(2)}%`
 }
 
-/**
- * Форматирование абсолютного изменения
- * @param {number|string} change - Изменение
- * @returns {string} Отформатированное число
- */
+// Форматирование изменения
 function formatChange(change) {
   if (change === null || change === undefined) return '--.--'
   const value = parseFloat(change)
@@ -415,27 +435,19 @@ function formatChange(change) {
   return `${sign}${value.toFixed(2)}`
 }
 
-/**
- * Получение CSS класса для изменения цены
- * @param {number|string} value - Значение изменения
- * @returns {string} Имя CSS класса (positive/negative/neutral)
- */
+// Класс для изменения цены
 function getChangeClass(value) {
   if (value === null || value === undefined) return 'neutral'
   return parseFloat(value) >= 0 ? 'positive' : 'negative'
 }
 
-/**
- * Получение курса с API через прокси
- * Использует AbortController для таймаута
- */
+// Получение курса с API через прокси
 async function fetchExchangeRate() {
   try {
     loading.value = true
     apiError.value = false
     errorMessage.value = ''
 
-    // Создаем контроллер для отмены запроса по таймауту (10 сек)
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 10000)
 
@@ -484,7 +496,6 @@ async function fetchExchangeRate() {
 
     apiError.value = true
 
-    // Обработка различных типов ошибок
     if (error.name === 'AbortError') {
       errorMessage.value = 'Превышено время ожидания ответа от сервера'
     } else if (error.message.includes('Failed to fetch')) {
@@ -500,18 +511,12 @@ async function fetchExchangeRate() {
   }
 }
 
-// Повторная попытка загрузки данных
+// Повторная попытка загрузки
 function retryFetch() {
   fetchExchangeRate()
 }
 
-/**
- * Показ уведомления (toast)
- * @param {string} type - Тип (success, error, warning, info)
- * @param {string} title - Заголовок
- * @param {string} message - Текст сообщения
- * @param {number} duration - Длительность показа в мс
- */
+// Показ уведомления
 function showNotification(type, title, message = '', duration = 5000) {
   const id = Date.now().toString()
   notifications.value.push({
@@ -521,14 +526,13 @@ function showNotification(type, title, message = '', duration = 5000) {
     message,
     duration
   })
-
-  // Автоматически удаляем через duration + время анимации
+  
+  // Автоматически удаляем через duration + анимация
   setTimeout(() => {
     removeNotification(id)
   }, duration + 300)
 }
 
-// Удаление уведомления по ID
 function removeNotification(id) {
   const index = notifications.value.findIndex(n => n.id === id)
   if (index > -1) {
@@ -548,9 +552,10 @@ function handlePhoneInput(event) {
 
 // Расчет итоговой суммы (+5.5% комиссия)
 function calculateTotal() {
-  if (formData.value.amount && exchangeRate.value.askPrice) {
-    const baseAmount = formData.value.amount * exchangeRate.value.askPrice
-    totalAmount.value = baseAmount * 1.055 // +5.5%
+  if (formData.value.amount && exchangeRate.value.bidPrice) {
+    // Используем bidPrice и добавляем комиссию 5.5%
+    const ourRate = exchangeRate.value.bidPrice * 1.055
+    totalAmount.value = formData.value.amount * ourRate
   } else {
     totalAmount.value = 0
   }
@@ -560,14 +565,14 @@ function calculateTotal() {
 function handleAmountInput(event) {
   const formatted = formatAmount(event.target.value)
   const parsed = parseAmount(formatted)
-
+  
   // Обновляем значение в input (отформатированное)
   event.target.value = formatted
-
-  // Сохраняем числовое значение в модель
+  
+  // Сохраняем числовое значение
   formData.value.amount = parsed
   calculateTotal()
-
+  
   // Очищаем ошибку при вводе
   if (formErrors.value.amount) {
     delete formErrors.value.amount
@@ -576,10 +581,9 @@ function handleAmountInput(event) {
 
 // Открытие формы заявки
 function openApplicationForm() {
-  // Проверяем, что данные загружены и нет ошибок
   if (!loading.value && !apiError.value && hasData.value) {
     showApplicationForm.value = true
-
+    
     // Сбрасываем все поля формы (клиент должен ввести данные самостоятельно)
     formData.value.name = ''
     formData.value.email = ''
@@ -590,8 +594,8 @@ function openApplicationForm() {
     formData.value.agreement = false
     formErrors.value = {}
     totalAmount.value = 0
-
-    // Показываем кнопку "Назад" в Telegram (если запущено там)
+    
+    // Показываем кнопку "Назад" в Telegram
     if (isTelegram.value) {
       showBackButton(() => {
         showApplicationForm.value = false
@@ -601,21 +605,21 @@ function openApplicationForm() {
   }
 }
 
-// Отправка формы заявки
+// Отправка формы
 async function submitApplication() {
   if (!hasData.value) return
 
-  // 1. Валидация формы на клиенте
+  // Валидация формы
   formErrors.value = {}
   const validation = validateForm(formData.value)
-
+  
   if (!validation.isValid) {
     formErrors.value = validation.errors
-    // Показываем уведомление с первой ошибкой
+    // Показываем первую ошибку
     const firstError = Object.values(validation.errors)[0]
     showNotification('error', 'Ошибка валидации', firstError)
-
-    // Прокручиваем к первому полю с ошибкой
+    
+    // Прокручиваем к первой ошибке
     const firstErrorField = Object.keys(validation.errors)[0]
     const errorElement = document.getElementById(firstErrorField)
     if (errorElement) {
@@ -628,7 +632,6 @@ async function submitApplication() {
   formSubmitting.value = true
 
   try {
-    // 2. Отправка данных на сервер
     const response = await fetch(API_ORDERS_URL, {
       method: 'POST',
       headers: {
@@ -654,7 +657,7 @@ async function submitApplication() {
       if (data.errors && Array.isArray(data.errors)) {
         const serverErrors = {}
         data.errors.forEach(error => {
-          // Пытаемся определить поле по сообщению ошибки
+          // Пытаемся определить поле по сообщению
           if (error.includes('Имя')) serverErrors.name = error
           else if (error.includes('телефон')) serverErrors.phone = error
           else if (error.includes('Сумма')) serverErrors.amount = error
@@ -663,11 +666,11 @@ async function submitApplication() {
         })
         formErrors.value = { ...formErrors.value, ...serverErrors }
       }
-
+      
       throw new Error(data.message || 'Ошибка при отправке заявки')
     }
 
-    // 3. Отправляем уведомление администратору через Telegram
+    // Отправляем сообщение администратору через Telegram
     try {
       await fetch(API_TELEGRAM_URL, {
         method: 'POST',
@@ -692,10 +695,10 @@ async function submitApplication() {
       })
     } catch (telegramError) {
       console.warn('Не удалось отправить уведомление в Telegram:', telegramError)
-      // Не прерываем процесс, если отправка в Telegram не удалась, так как заявка уже создана
+      // Не прерываем процесс, если отправка в Telegram не удалась
     }
 
-    // 4. Показываем сообщение об успехе
+    // Успешная отправка
     showNotification(
       'success',
       'Заявка успешно отправлена!',
@@ -707,8 +710,8 @@ async function submitApplication() {
     setTimeout(() => {
       showApplicationForm.value = false
       hideBackButton()
-
-      // Сбрасываем форму
+      
+      // Сбрасываем форму (клиент должен ввести данные самостоятельно)
       formData.value.name = ''
       formData.value.email = ''
       formData.value.phone = ''
@@ -722,8 +725,7 @@ async function submitApplication() {
 
   } catch (error) {
     console.error('❌ Ошибка при отправке заявки:', error)
-
-    // Показываем понятное сообщение об ошибке
+    
     if (error.name === 'AbortError') {
       showNotification('error', 'Ошибка сети', 'Превышено время ожидания ответа от сервера')
     } else if (error.message.includes('Failed to fetch')) {
@@ -736,20 +738,17 @@ async function submitApplication() {
   }
 }
 
-// Таймер для периодического обновления курса
+// Таймеры
 let updateTimer = null
 
-// Инициализация при монтировании компонента
+// Инициализация
 onMounted(() => {
-  // Очистка таймера при размонтировании
   onUnmounted(() => {
     if (updateTimer) clearInterval(updateTimer)
   })
 
-  // Первичное получение курса
   fetchExchangeRate()
 
-  // Запуск периодического обновления
   updateTimer = setInterval(fetchExchangeRate, UPDATE_INTERVAL)
 })
 </script>
@@ -1201,6 +1200,7 @@ onMounted(() => {
   border-top: 3px solid #667eea;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  margin-bottom: 15px;
 }
 
 @keyframes spin {
@@ -1479,13 +1479,13 @@ onMounted(() => {
     min-height: 100vh;
     height: auto;
     padding: 0;
-    align-items: flex-start;
-    padding-top: env(safe-area-inset-top, 0);
+    align-items: flex-start; /* Изменено с center на flex-start */
+    padding-top: env(safe-area-inset-top, 0); /* Для iPhone с вырезом */
   }
 
   .content-wrapper {
     width: 100%;
-
+    
     padding: 0;
     border-radius: 0;
     margin: 0;
@@ -1522,12 +1522,137 @@ onMounted(() => {
     font-size: 14px;
   }
 
-  .exchange-container {
-    margin-bottom: 30px;
+  .exchange-rates {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .rate-block {
+    height: auto;
+    min-height: 110px;
+    padding: 18px;
+  }
+
+  .rate-value {
+    font-size: 28px;
+  }
+
+  .rate-info {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding-top: 15px;
+  }
+
+  .info-item.full-width {
+    grid-column: span 1;
+  }
+
+  .loading-state,
+  .error-state {
+    padding: 25px 20px;
+    min-height: auto;
+  }
+
+  .error-icon {
+    font-size: 40px;
+    margin-bottom: 15px;
+  }
+
+  .error-state h3 {
+    font-size: 18px;
+  }
+
+  .error-message {
+    font-size: 14px;
+  }
+
+  .submit-btn {
+    padding: 18px 20px;
+    font-size: 16px;
+  }
+
+  .form-card {
+    padding: 25px 20px;
+  }
+
+  .form-header h2 {
+    font-size: 22px;
+  }
+
+  .form-group {
+    gap: 6px;
+  }
+
+  .form-input,
+  .form-textarea,
+  select.form-input {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .total-amount {
+    padding: 12px;
+  }
+
+  .total-value {
+    font-size: 24px;
+  }
+
+  .submit-form-btn {
+    padding: 16px 20px;
+    font-size: 16px;
+  }
+
+  .notifications-container {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+  }
+
+  .toast {
+    min-width: auto;
+    max-width: none;
+    padding: 14px 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-container {
+    padding: 0;
+    padding-top: env(safe-area-inset-top, 0);
+    align-items: flex-start;
+  }
+
+  .content-wrapper {
+    padding: 0;
+    border-radius: 0;
+    box-sizing: border-box;
+  }
+
+  .center-container {
+    padding: 20px 15px;
+    border-radius: 0;
+    min-height: auto;
+
+  }
+
+  .logo-image {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 12px;
+  }
+
+  .logo-title {
+    font-size: 20px;
+  }
+
+  .logo-subtitle {
+    font-size: 13px;
   }
 
   .exchange-card {
-    padding: 20px;
+    padding: 18px 15px;
   }
 
   .exchange-header {
@@ -1538,35 +1663,132 @@ onMounted(() => {
     font-size: 20px;
   }
 
-  .rate-value {
-    font-size: 26px;
-  }
-
   .rate-block {
-    height: 130px;
     padding: 15px;
-  }
-
-  .submit-btn {
-    padding: 18px 24px;
-    font-size: 16px;
-    margin-bottom: 20px;
-  }
-}
-
-@media (max-width: 380px) {
-  .exchange-rates {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
-
-  .rate-block {
-    height: auto;
     min-height: 100px;
   }
 
   .rate-value {
-    font-size: 28px;
+    font-size: 24px;
+  }
+
+  .rate-label {
+    font-size: 12px;
+  }
+
+  .rate-change {
+    font-size: 12px;
+  }
+
+  .rate-info {
+    gap: 10px;
+    padding-top: 12px;
+  }
+
+  .info-label {
+    font-size: 11px;
+  }
+
+  .info-value {
+    font-size: 13px;
+  }
+
+  .submit-btn {
+    padding: 16px 18px;
+    font-size: 15px;
+  }
+
+  .form-card {
+    padding: 20px 15px;
+  }
+
+  .form-header h2 {
+    font-size: 20px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+  }
+
+  .form-input,
+  .form-textarea,
+  select.form-input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .total-value {
+    font-size: 22px;
+  }
+
+  .submit-form-btn {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+
+  .toast {
+    padding: 12px 16px;
+  }
+
+  .toast-title {
+    font-size: 14px;
+  }
+
+  .toast-message {
+    font-size: 12px;
+  }
+}
+
+/* Для очень маленьких экранов (iPhone SE и подобные) */
+@media (max-width: 375px) {
+  .center-container {
+    padding: 18px 12px;
+  }
+
+  .logo-image {
+    width: 50px;
+    height: 50px;
+  }
+
+  .logo-title {
+    font-size: 18px;
+  }
+
+  .rate-value {
+    font-size: 22px;
+  }
+
+  .submit-btn {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Портретная ориентация на мобильных */
+@media (max-width: 768px) and (orientation: portrait) {
+  .main-container {
+    min-height: 100vh;
+    height: 100vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Ландшафтная ориентация на мобильных */
+@media (max-width: 768px) and (orientation: landscape) {
+  .center-container {
+    min-height: auto;
+    max-height: 95vh;
+    overflow-y: auto;
+  }
+
+  .logo-container {
+    margin-bottom: 20px;
+  }
+
+  .logo-image {
+    width: 50px;
+    height: 50px;
   }
 }
 </style>
