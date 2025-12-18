@@ -287,7 +287,18 @@ function formatAdminMessage(orderData) {
   message += `\n💰 <b>Детали обмена:</b>\n`
   message += `   • Сумма: <b>${amount} USDT</b>\n`
   message += `   • К получению: <b>${parseFloat(totalAmount).toFixed(2)} RUB</b>\n`
-  message += `   • Курс: <code>${parseFloat(exchangeRate.askPrice).toFixed(2)} ₽</code>\n`
+  
+  // Курс на Rapira (оригинальный)
+  const rapiraRate = exchangeRate.bidPrice ? parseFloat(exchangeRate.bidPrice).toFixed(2) : 
+                     exchangeRate.askPrice ? parseFloat(exchangeRate.askPrice).toFixed(2) : 'N/A'
+  
+  // Наш курс (с комиссией)
+  const ourRate = amount && totalAmount ? (parseFloat(totalAmount) / parseFloat(amount)).toFixed(2) : 
+                  exchangeRate.bidPrice ? (parseFloat(exchangeRate.bidPrice) * 1.055).toFixed(2) : 
+                  exchangeRate.askPrice ? parseFloat(exchangeRate.askPrice).toFixed(2) : 'N/A'
+  
+  message += `   • Курс на Rapira: <code>${rapiraRate} ₽</code>\n`
+  message += `   • Наш курс: <code>${ourRate} ₽</code>\n`
   message += `   • Способ оплаты: ${formatPaymentMethod(paymentMethod)}\n`
   
   if (comment && comment.trim()) {
@@ -328,10 +339,17 @@ function formatClientMessage(orderData) {
   message += `   • Сумма: <b>${amount} USDT</b>\n`
   message += `   • К получению: <b>${parseFloat(totalAmount).toFixed(2)} RUB</b>\n`
   
-  // Используем курс с комиссией (наш курс)
-  const ourRate = exchangeRate.bidPrice ? (parseFloat(exchangeRate.bidPrice) * 1.055).toFixed(2) : 
+  // Курс на Rapira (оригинальный)
+  const rapiraRate = exchangeRate.bidPrice ? parseFloat(exchangeRate.bidPrice).toFixed(2) : 
+                     exchangeRate.askPrice ? parseFloat(exchangeRate.askPrice).toFixed(2) : 'N/A'
+  
+  // Наш курс (с комиссией) - рассчитываем из totalAmount и amount
+  const ourRate = amount && totalAmount ? (parseFloat(totalAmount) / parseFloat(amount)).toFixed(2) : 
+                  exchangeRate.bidPrice ? (parseFloat(exchangeRate.bidPrice) * 1.055).toFixed(2) : 
                   exchangeRate.askPrice ? parseFloat(exchangeRate.askPrice).toFixed(2) : 'N/A'
-  message += `   • Курс: <code>${ourRate} ₽</code>\n`
+  
+  message += `   • Курс на Rapira: <code>${rapiraRate} ₽</code>\n`
+  message += `   • Наш курс: <code>${ourRate} ₽</code>\n`
   message += `   • Способ оплаты: ${formatPaymentMethod(paymentMethod)}\n`
   
   if (comment && comment.trim()) {

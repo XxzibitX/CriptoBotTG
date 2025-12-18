@@ -108,7 +108,7 @@
               <div class="rate-summary">
                 <div class="rate-summary-item">
                   <span class="rate-label">Текущий курс:</span>
-                  <span class="rate-value">{{ formatPrice(exchangeRate.askPrice) }} ₽ за 1 USDT</span>
+                  <span class="rate-value">{{ formatPrice(exchangeRate.bidPrice * 1.055) }} ₽ за 1 USDT</span>
                 </div>
                 <div class="rate-summary-item">
                   <span class="rate-label">Ваш бонус к сумме:</span>
@@ -188,7 +188,7 @@
                     <span class="total-currency">RUB</span>
                   </div>
                   <div class="calculation-hint">
-                    {{ formData.amount || 0 }} USDT × {{ formatPrice(exchangeRate.askPrice) }} ₽ + 5,5 %
+                    {{ formData.amount || 0 }} USDT × {{ formatPrice(exchangeRate.bidPrice * 1.055) }} ₽
                   </div>
                 </div>
 
@@ -552,9 +552,10 @@ function handlePhoneInput(event) {
 
 // Расчет итоговой суммы (+5.5% комиссия)
 function calculateTotal() {
-  if (formData.value.amount && exchangeRate.value.askPrice) {
-    const baseAmount = formData.value.amount * exchangeRate.value.askPrice
-    totalAmount.value = baseAmount * 1.055 // +5.5%
+  if (formData.value.amount && exchangeRate.value.bidPrice) {
+    // Используем bidPrice и добавляем комиссию 5.5%
+    const ourRate = exchangeRate.value.bidPrice * 1.055
+    totalAmount.value = formData.value.amount * ourRate
   } else {
     totalAmount.value = 0
   }
