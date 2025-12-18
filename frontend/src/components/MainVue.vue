@@ -887,7 +887,7 @@ onMounted(() => {
 }
 
 .rate-summary-item .rate-label {
-  font-size: 13px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.6);
 }
 
