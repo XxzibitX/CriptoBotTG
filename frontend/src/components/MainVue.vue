@@ -55,7 +55,7 @@
             <div v-else-if="hasData" class="rates-content">
               <div class="exchange-rates">
                 <div class="rate-block buy">
-                  <div class="rate-label">Покупка</div>
+                  <div class="rate-label">Курс на Rapira</div>
                   <div class="rate-value">{{ formatPrice(exchangeRate.bidPrice) }} ₽</div>
                   <div class="rate-change" :class="getChangeClass(exchangeRate.chg)">
                     {{ formatPercentage(exchangeRate.chg) }}
@@ -63,8 +63,8 @@
                 </div>
 
                 <div class="rate-block sell">
-                  <div class="rate-label">Продажа</div>
-                  <div class="rate-value">{{ formatPrice(exchangeRate.askPrice) }} ₽</div>
+                  <div class="rate-label">Наш курс</div>
+                  <div class="rate-value">{{ formatPrice(exchangeRate.bidPrice * 1.055) }} ₽</div>
                   <div class="rate-change" :class="getChangeClass(exchangeRate.chg)">
                     {{ formatPercentage(exchangeRate.chg) }}
                   </div>
