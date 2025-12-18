@@ -15,7 +15,15 @@ const DATA_DIR = path.dirname(ORDERS_FILE)
 // Telegram Bot Configuration
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID
-const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`
+const TELEGRAM_API_URL = TELEGRAM_BOT_TOKEN ? `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}` : null
+
+// Отладочный вывод (только если токены не установлены)
+if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_ADMIN_CHAT_ID) {
+  console.log('⚠️ Telegram Bot не настроен:')
+  console.log('  TELEGRAM_BOT_TOKEN:', TELEGRAM_BOT_TOKEN ? 'SET' : 'NOT SET')
+  console.log('  TELEGRAM_ADMIN_CHAT_ID:', TELEGRAM_ADMIN_CHAT_ID ? 'SET' : 'NOT SET')
+  console.log('  Проверьте файл .env в:', path.join(__dirname, '.env'))
+}
 
 // Создаем директорию для данных, если её нет
 async function ensureDataDir() {
@@ -298,6 +306,8 @@ app.post('/api/telegram/send', async (req, res) => {
     // Проверяем наличие конфигурации Telegram
     if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_ADMIN_CHAT_ID) {
       console.warn('⚠️ Telegram Bot не настроен. Пропускаем отправку сообщения.')
+      console.warn('  TELEGRAM_BOT_TOKEN:', TELEGRAM_BOT_TOKEN ? 'SET' : 'NOT SET')
+      console.warn('  TELEGRAM_ADMIN_CHAT_ID:', TELEGRAM_ADMIN_CHAT_ID ? 'SET' : 'NOT SET')
       return res.status(200).json({
         success: false,
         message: 'Telegram Bot не настроен',
@@ -311,6 +321,10 @@ app.post('/api/telegram/send', async (req, res) => {
     const message = formatAdminMessage(orderData)
     
     // Отправляем сообщение через Telegram Bot API
+    if (!TELEGRAM_API_URL) {
+      throw new Error('TELEGRAM_API_URL не настроен')
+    }
+    
     const telegramResponse = await fetch(`${TELEGRAM_API_URL}/sendMessage`, {
       method: 'POST',
       headers: {
