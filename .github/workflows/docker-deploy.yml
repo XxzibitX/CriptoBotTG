@@ -79,18 +79,31 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
+            # 1. Останавливаем системный nginx и отключаем автозапуск
+            sudo systemctl stop nginx 2>/dev/null || true
+            sudo systemctl disable nginx 2>/dev/null || true
+            
+            # 2. Проверяем и убиваем другие процессы на порту 80
+            sudo pkill -f nginx 2>/dev/null || true
+            sudo ss -tulpn | grep :80 && echo "Port 80 is occupied, trying to free..." || echo "Port 80 is free"
+            
             cd ~/criptobot
             mv docker-compose.prod.yml docker-compose.yml
             
-            # Export env vars
-            export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
-            export TELEGRAM_ADMIN_CHAT_IDS=${{ secrets.TELEGRAM_ADMIN_CHAT_IDS }}
+            # 3. Экспорт переменных окружения
+            export TELEGRAM_BOT_TOKEN="${{ secrets.TELEGRAM_BOT_TOKEN }}"
+            export TELEGRAM_ADMIN_CHAT_IDS="${{ secrets.TELEGRAM_ADMIN_CHAT_IDS }}"
             export RAPIRA_API_URL="https://api.rapira.net/open/market/rates"
-            export IMAGE_REPO=ghcr.io/${{ env.REPO }}
+            export IMAGE_REPO="ghcr.io/${{ env.REPO }}"
             
-            # Login to registry on VPS
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            # 4. Логин в реестр на VPS
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
             
-            # Pull and restart
+            # 5. Обновляем и запускаем контейнеры
+            docker-compose down
             docker-compose pull
             docker-compose up -d --remove-orphans
+            
+            # 6. Проверяем, что контейнеры запущены
+            docker-compose ps
+            echo "Deployment completed!"
