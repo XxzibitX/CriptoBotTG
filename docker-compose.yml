@@ -1,0 +1,35 @@
+services:
+  nginx-proxy:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx-docker.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend
+      - backend
+    restart: always
+
+  frontend:
+    build: ./frontend
+    restart: always
+
+  backend:
+    build: ./backend
+    environment:
+      - PORT=3000
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_ADMIN_CHAT_IDS=${TELEGRAM_ADMIN_CHAT_IDS}
+      - RAPIRA_API_URL=${RAPIRA_API_URL}
+    volumes:
+      - backend_data:/app/data
+    restart: always
+
+  telegram-bot:
+    build: ./telegram-bot-telegraf
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+    restart: always
+
+volumes:
+  backend_data:

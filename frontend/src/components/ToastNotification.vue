@@ -1,16 +1,19 @@
 <template>
   <Transition name="toast">
     <div v-if="visible" :class="['toast', `toast-${type}`]">
+      <!-- Иконка в зависимости от типа уведомления -->
       <div class="toast-icon">
         <span v-if="type === 'success'">✅</span>
         <span v-else-if="type === 'error'">❌</span>
         <span v-else-if="type === 'warning'">⚠️</span>
         <span v-else>ℹ️</span>
       </div>
+      <!-- Контент уведомления -->
       <div class="toast-content">
         <div class="toast-title">{{ title }}</div>
         <div v-if="message" class="toast-message">{{ message }}</div>
       </div>
+      <!-- Кнопка закрытия -->
       <button class="toast-close" @click="close">×</button>
     </div>
   </Transition>
@@ -19,34 +22,42 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
+// Входные параметры компонента
 const props = defineProps({
+  // Тип уведомления: success, error, warning, info
   type: {
     type: String,
     default: 'info',
     validator: (value) => ['success', 'error', 'warning', 'info'].includes(value)
   },
+  // Заголовок уведомления
   title: {
     type: String,
     required: true
   },
+  // Текст сообщения
   message: {
     type: String,
     default: ''
   },
+  // Время отображения в мс
   duration: {
     type: Number,
     default: 5000
   }
 })
 
+// События, которые может генерировать компонент
 const emit = defineEmits(['close'])
 
 const visible = ref(false)
 let timeoutId = null
 
 onMounted(() => {
+  // Показываем уведомление при монтировании
   visible.value = true
   
+  // Если задана длительность, запускаем таймер скрытия
   if (props.duration > 0) {
     timeoutId = setTimeout(() => {
       close()
@@ -54,18 +65,21 @@ onMounted(() => {
   }
 })
 
+// Метод закрытия уведомления
 function close() {
   visible.value = false
   if (timeoutId) {
     clearTimeout(timeoutId)
   }
+  // Ждем завершения анимации перед генерацией события close
   setTimeout(() => {
     emit('close')
-  }, 300) // Ждем завершения анимации
+  }, 300) 
 }
 </script>
 
 <style scoped>
+/* Стили уведомления */
 .toast {
   position: fixed;
   top: 20px;
@@ -85,6 +99,7 @@ function close() {
   animation: slideIn 0.3s ease-out;
 }
 
+/* Цветовое кодирование типов уведомлений */
 .toast-success {
   border-left: 4px solid #10b981;
 }
@@ -148,6 +163,7 @@ function close() {
   color: white;
 }
 
+/* Анимация появления */
 @keyframes slideIn {
   from {
     transform: translateX(100%);
@@ -159,6 +175,7 @@ function close() {
   }
 }
 
+/* Анимации перехода Vue */
 .toast-enter-active,
 .toast-leave-active {
   transition: all 0.3s ease;
@@ -174,6 +191,7 @@ function close() {
   opacity: 0;
 }
 
+/* Адаптивность для мобильных */
 @media (max-width: 480px) {
   .toast {
     top: 10px;

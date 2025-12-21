@@ -282,9 +282,6 @@ import usdtIcon from './icons/usdt.svg'
 const {
   isTelegram,
   user: telegramUser,
-  sendDataToBot,
-  showMainButton,
-  hideMainButton,
   showBackButton,
   hideBackButton
 } = useTelegram()
@@ -369,7 +366,7 @@ const getButtonText = computed(() => {
   return 'Оставить заявку'
 })
 
-const formattedLastUpdateTime = computed(() => {
+/*const formattedLastUpdateTime = computed(() => {
   if (!lastSuccessfulFetchTime.value) return '--:--:--'
 
   const now = Date.now()
@@ -393,7 +390,7 @@ const formattedLastUpdateTime = computed(() => {
       minute: '2-digit'
     })
   }
-})
+})*/
 
 const statusMessage = computed(() => {
   if (!lastSuccessfulFetchTime.value) return '⏳ Ожидание данных...'
