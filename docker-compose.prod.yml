@@ -20,7 +20,7 @@ services:
       - PORT=3000
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_ADMIN_CHAT_IDS=${TELEGRAM_ADMIN_CHAT_IDS}
-      - RAPIRA_API_URL=${RAPIRA_API_URL}
+      - RAPIRA_API_URL=${RAPIRA_API_URL:-https://api.rapira.net/open/market/rates}
     volumes:
       - backend_data:/app/data
     restart: always

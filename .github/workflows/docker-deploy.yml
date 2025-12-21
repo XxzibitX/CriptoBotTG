@@ -85,7 +85,8 @@ jobs:
             # Export env vars
             export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
             export TELEGRAM_ADMIN_CHAT_IDS=${{ secrets.TELEGRAM_ADMIN_CHAT_IDS }}
-            export IMAGE_REPO=ghcr.io/${GITHUB_REPOSITORY,,}
+            export RAPIRA_API_URL="https://api.rapira.net/open/market/rates"
+            export IMAGE_REPO=ghcr.io/${{ env.REPO }}
             
             # Login to registry on VPS
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
