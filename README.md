@@ -1,44 +1,103 @@
-# frontend
+# CriptoBotTG / Vertex
 
-This template should help get you started developing with Vue 3 in Vite.
+Vertex — это Telegram Web App (Mini App) для обмена USDT на рубли. Проект включает в себя Frontend на Vue 3, Backend прокси-сервер на Express и Telegram бота на Telegraf.
 
-## Recommended IDE Setup
+## 🏗 Архитектура
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+Проект состоит из трех основных контейнеров, управляемых через Docker Compose:
 
-## Recommended Browser Setup
+1.  **Frontend (`/frontend`)**:
+    *   SPA приложение на Vue 3 + Vite.
+    *   Использует Telegram Web App SDK для интеграции с мессенджером.
+    *   Раздается через Nginx (внутри контейнера).
+    *   Основные функции: просмотр курса (через API), форма заявки, валидация.
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+2.  **Backend (`/backend`)**:
+    *   Node.js (Express) сервер.
+    *   Выступает как прокси к внешнему API курсов (Rapira) для обхода CORS и сокрытия ключей.
+    *   Обрабатывает отправку уведомлений администраторам в Telegram при создании новой заявки.
 
-## Customize configuration
+3.  **Telegram Bot (`/telegram-bot-telegraf`)**:
+    *   Бот на базе Telegraf.
+    *   Отвечает на команду `/start`.
+    *   Предоставляет кнопку для открытия Web App.
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+4.  **Nginx Proxy (`nginx-docker.conf`)**:
+    *   Единая точка входа (Reverse Proxy).
+    *   Маршрутизирует запросы:
+        *   `/api/*` -> Backend контейнер (порт 3000).
+        *   Остальное -> Frontend контейнер (порт 80).
 
-## Project Setup
+## 🚀 Запуск (Локально)
 
-```sh
-npm install
+Для запуска вам потребуется установленный **Docker** и **Docker Compose**.
+
+1.  **Клонируйте репозиторий:**
+    ```bash
+    git clone https://github.com/your-username/CriptoBotTG.git
+    cd CriptoBotTG
+    ```
+
+2.  **Настройте переменные окружения:**
+    Создайте файл `.env` в корне (или задайте переменные в `docker-compose.yml`):
+    *   `TELEGRAM_BOT_TOKEN`: Токен вашего бота (от @BotFather).
+    *   `TELEGRAM_ADMIN_CHAT_IDS`: ID чатов админов через запятую (для уведомлений о заявках).
+    *   `RAPIRA_API_URL`: URL API биржи (по умолчанию настроен в коде, можно переопределить).
+
+3.  **Запустите проект:**
+    ```bash
+    docker-compose up --build
+    ```
+
+4.  **Откройте приложение:**
+    *   Frontend: `http://localhost`
+    *   Бот: Найдите вашего бота в Telegram и нажмите `/start`.
+
+## 📦 Деплой (Production)
+
+Проект настроен для автоматического деплоя через **GitHub Actions**.
+
+### Предварительная настройка VPS:
+1.  Установите Docker и Docker Compose на сервер.
+2.  Убедитесь, что порты 80 и 443 свободны.
+
+### Настройка GitHub Repository:
+Добавьте следующие Secrets в настройки репозитория (`Settings` -> `Secrets and variables` -> `Actions`):
+
+*   `VPS_HOST`: IP адрес вашего сервера.
+*   `VPS_USER`: Имя пользователя SSH (обычно `root`).
+*   `VPS_KEY`: Приватный SSH ключ.
+*   `TELEGRAM_BOT_TOKEN`: Токен бота.
+*   `TELEGRAM_ADMIN_CHAT_IDS`: ID админов.
+
+### Процесс деплоя:
+При пуше в ветку `main` или `master`:
+1.  GitHub Actions собирает Docker-образы.
+2.  Образы загружаются в GitHub Container Registry (ghcr.io).
+3.  На VPS обновляется `docker-compose.yml` и перезапускаются контейнеры.
+
+## 🛠 Структура проекта
+
+```
+.
+├── backend/                 # Backend (Express)
+│   ├── proxy.js             # Основной файл сервера
+│   └── Dockerfile
+├── frontend/                # Frontend (Vue 3)
+│   ├── src/                 # Исходный код Vue
+│   ├── nginx.conf           # Конфиг Nginx для контейнера фронтенда
+│   └── Dockerfile
+├── telegram-bot-telegraf/   # Telegram Bot
+│   ├── bot.js               # Логика бота
+│   └── Dockerfile
+├── .github/workflows/       # CI/CD конфигурация
+├── docker-compose.yml       # Конфиг для локального запуска
+├── docker-compose.prod.yml  # Конфиг для продакшена (используется в CI)
+└── nginx-docker.conf        # Конфиг главного Nginx-прокси
 ```
 
-### Compile and Hot-Reload for Development
+## 📝 Разработка
 
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+*   **Frontend**: `cd frontend && npm install && npm run dev` (запустит локальный dev-сервер Vite).
+*   **Backend**: `cd backend && npm install && node proxy.js` (требует настройки ENV).
+*   **Bot**: `cd telegram-bot-telegraf && npm install && node bot.js`.
