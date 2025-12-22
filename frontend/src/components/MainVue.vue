@@ -1414,7 +1414,7 @@ onMounted(() => {
 /* Кнопка заявки */
 .submit-btn {
   width: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #006618 0%, #008024 50%, #5ac200 100%);
   border: none;
   border-radius: 16px;
   padding: 22px 30px;
@@ -1436,12 +1436,17 @@ onMounted(() => {
 .submit-btn:hover:not(.disabled) {
   transform: translateY(-3px);
   box-shadow:
-    0 15px 30px rgba(102, 126, 234, 0.4),
-    0 0 0 2px rgba(102, 126, 234, 0.1);
+    0 15px 30px rgba(0, 104, 24, 0.4),     /* Основной цвет #006618 */
+    0 10px 20px rgba(0, 128, 36, 0.3),     /* Средний цвет #008024 */
+    0 0 0 2px rgba(90, 194, 0, 0.2);       /* Светлый цвет #5ac200 */
 }
 
 .submit-btn:active:not(.disabled) {
   transform: translateY(-1px);
+  box-shadow:
+    0 8px 20px rgba(0, 104, 24, 0.3),
+    0 5px 10px rgba(0, 128, 36, 0.2),
+    0 0 0 2px rgba(90, 194, 0, 0.1);
 }
 
 .submit-btn.disabled {
