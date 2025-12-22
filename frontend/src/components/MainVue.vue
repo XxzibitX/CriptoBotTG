@@ -400,7 +400,7 @@ const statusMessage = computed(() => {
   const diffSeconds = Math.floor((now - lastUpdate) / 1000)
 
   if (diffSeconds < 60) {
-    return '✅ Курс актуален'
+    return 'Курс актуален'
   } else if (diffSeconds < 300) {
     return '🟡 Обновляется...'
   } else if (diffSeconds < 1800) {
@@ -1365,7 +1365,6 @@ onMounted(() => {
   text-align: center;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .status-info {
