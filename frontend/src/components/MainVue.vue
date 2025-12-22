@@ -83,11 +83,11 @@
                     {{ formatChange(exchangeRate.change) }} ₽
                   </span>
                 </div>
-                <div class="info-item full-width">
+                <div class="info-item full-width line">
                   <span class="info-label">Лимит:</span>
                   <span class="info-value">200,000 RUB за сделку</span>
                 </div>
-                <div class="info-item full-width status-info line">
+                <div class="info-item full-width status-info">
                   <span class="info-label">Статус:</span>
                   <span class="info-value">{{ statusMessage }}</span>
                 </div>
@@ -1340,10 +1340,6 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.line {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
 .info-item {
   display: flex;
   flex-direction: column;
@@ -1471,6 +1467,10 @@ onMounted(() => {
 
 .submit-btn:hover:not(.disabled) .btn-arrow {
   transform: translateX(5px);
+}
+
+.line {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Адаптивность */
