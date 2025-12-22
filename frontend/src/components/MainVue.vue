@@ -87,7 +87,7 @@
                   <span class="info-label">Лимит:</span>
                   <span class="info-value">200,000 RUB за сделку</span>
                 </div>
-                <div class="info-item full-width status-info">
+                <div class="info-item full-width status-info line">
                   <span class="info-label">Статус:</span>
                   <span class="info-value">{{ statusMessage }}</span>
                 </div>
@@ -1338,6 +1338,10 @@ onMounted(() => {
   padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   flex-shrink: 0;
+}
+
+.line {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .info-item {
