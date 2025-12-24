@@ -3,17 +3,17 @@
  * Корневой компонент приложения.
  * Собирает вместе основные части интерфейса:
  * - AnimatedBackground: анимированный фон с частицами
- * - MainVue: основной интерфейс обменника
+ * - RouterView: отображает текущую страницу (Home или Admin)
  */
 import AnimatedBackground from './components/AnimatedBackground.vue'
-import MainVue from './components/MainVue.vue'
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
   <!-- Фоновый компонент (рендерится на заднем плане благодаря z-index в его стилях) -->
   <AnimatedBackground />
-  
-  <!-- Основной контент приложения -->
-  <MainVue />
+
+  <!-- Основной контент приложения (меняется в зависимости от роута) -->
+  <RouterView />
 </template>
 

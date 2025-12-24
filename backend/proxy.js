@@ -471,6 +471,46 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
+// ================= АДМИНСКАЯ ЗАЩИТА =================
+const ADMIN_IDS = process.env.ADMIN_IDS ? 
+    process.env.ADMIN_IDS.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id)) 
+    : [];
+
+// Middleware для проверки
+function adminOnlyMiddleware(req, res, next) {
+    const telegramId = req.headers['x-telegram-user-id'];
+    
+    if (!telegramId) {
+        return res.status(401).json({ 
+            success: false,
+            error: 'AUTH_REQUIRED',
+            message: 'Требуется авторизация через Telegram' 
+        });
+    }
+    
+    const userId = parseInt(telegramId);
+    
+    if (!ADMIN_IDS.includes(userId)) {
+        return res.status(403).json({ 
+            success: false,
+            error: 'ACCESS_DENIED',
+            message: 'Доступ запрещён' 
+        });
+    }
+    
+    // Всё ок - фронтенд уже знает, что делать
+    next();
+}
+
+// Защищённый API endpoint для проверки прав
+app.get('/api/auth/check-admin', adminOnlyMiddleware, (req, res) => {
+    res.json({ 
+        success: true,
+        isAdmin: true,
+        message: 'Доступ разрешён' 
+    });
+});
+
 // Обработка 404
 app.use((req, res) => {
     res.status(404).json({
